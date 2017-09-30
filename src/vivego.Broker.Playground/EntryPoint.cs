@@ -28,11 +28,6 @@ namespace ProtoBroker.Playground
 					continue;
 				}
 
-				if (!allNetworkInterface.SupportsMulticast)
-				{
-					continue;
-				}
-
 				IPInterfaceProperties ipProperties = allNetworkInterface.GetIPProperties();
 				if (ipProperties.GatewayAddresses.Count == 0)
 				{
@@ -41,6 +36,11 @@ namespace ProtoBroker.Playground
 
 				foreach (UnicastIPAddressInformation ip in allNetworkInterface.GetIPProperties().UnicastAddresses)
 				{
+					if (ip.Address.Equals(IPAddress.Loopback))
+					{
+						continue;
+					}
+
 					if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
 					{
 						yield return ip.Address;
@@ -54,9 +54,9 @@ namespace ProtoBroker.Playground
 			IPAddress ipAddress = GetMyIpAddress().First();
 			int serverPort = PortUtils.FindAvailablePort();
 			IPEndPoint protoActorServerEndpoint = new IPEndPoint(ipAddress, serverPort);
-			new DiscoverMulticastServer(protoActorServerEndpoint, clusterId).Run();
-			MulticastDiscoverClientFactory clientFactory =
-				new MulticastDiscoverClientFactory(clusterId, replyWaitTimeout: TimeSpan.FromSeconds(2));
+			new UdpBroadcastServer(protoActorServerEndpoint, clusterId).Run();
+			UdpDiscoverClientFactory clientFactory =
+				new UdpDiscoverClientFactory(clusterId, replyWaitTimeout: TimeSpan.FromSeconds(2));
 			IPEndPoint[] endPoints = clientFactory.DiscoverEndPoints();
 
 			ILoggerFactory loggerFactory = new LoggerFactory().AddConsole(LogLevel.Debug);
