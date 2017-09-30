@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Reactive.Linq;
-using System.Threading;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
 
 using Microsoft.Extensions.Logging;
 
@@ -19,22 +19,50 @@ namespace ProtoBroker.Playground
 {
 	public class PubSubAutoConfig
 	{
+		private static IEnumerable<IPAddress> GetMyIpAddress()
+		{
+			foreach (NetworkInterface allNetworkInterface in NetworkInterface.GetAllNetworkInterfaces())
+			{
+				if (allNetworkInterface.OperationalStatus != OperationalStatus.Up)
+				{
+					continue;
+				}
+
+				if (!allNetworkInterface.SupportsMulticast)
+				{
+					continue;
+				}
+
+				IPInterfaceProperties ipProperties = allNetworkInterface.GetIPProperties();
+				if (ipProperties.GatewayAddresses.Count == 0)
+				{
+					continue;
+				}
+
+				foreach (UnicastIPAddressInformation ip in allNetworkInterface.GetIPProperties().UnicastAddresses)
+				{
+					if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
+					{
+						yield return ip.Address;
+					}
+				}
+			}
+		}
+
 		public static IPublishSubscribe Auto(string clusterId)
 		{
-			//int serverPort = PortUtils.FindAvailablePortIncrementally(35000);
-			//string address = Dns.GetHostAddresses(Dns.GetHostName())
-			//	.First(ipAddress => ipAddress.AddressFamily == AddressFamily.InterNetwork && !Equals(ipAddress, IPAddress.Loopback)).ToString();
-
+			IPAddress ipAddress = GetMyIpAddress().First();
 			int serverPort = PortUtils.FindAvailablePort();
-			IPEndPoint protoActorServerEndpoint = new IPEndPoint(IPAddress.Loopback, serverPort);
+			IPEndPoint protoActorServerEndpoint = new IPEndPoint(ipAddress, serverPort);
 			new DiscoverMulticastServer(protoActorServerEndpoint, clusterId).Run();
-			MulticastDiscoverClientFactory clientFactory = new MulticastDiscoverClientFactory(clusterId, replyWaitTimeout: TimeSpan.FromSeconds(2));
+			MulticastDiscoverClientFactory clientFactory =
+				new MulticastDiscoverClientFactory(clusterId, replyWaitTimeout: TimeSpan.FromSeconds(2));
 			IPEndPoint[] endPoints = clientFactory.DiscoverEndPoints();
 
 			ILoggerFactory loggerFactory = new LoggerFactory().AddConsole(LogLevel.Debug);
 			ISerializer<byte[]> serializer = new MessagePackSerializer();
 			IPublishSubscribe pubSub = PublishSubscribe.StartCluster(clusterId,
-				"127.0.0.1",
+				ipAddress.ToString(),
 				serverPort,
 				new StaticClusterProvider(TimeSpan.FromSeconds(1), endPoints),
 				serializer,
@@ -52,39 +80,14 @@ namespace ProtoBroker.Playground
 			IPublishSubscribe pubSub = PubSubAutoConfig.Auto("I am unique");
 			using (pubSub)
 			{
-				long counter=0;
-				Stopwatch sw = Stopwatch.StartNew();
-				var elapsed = sw.Elapsed;
-				Observable
-					.Interval(TimeSpan.FromSeconds(1))
-					.Subscribe(_ =>
-					{
-						var c = Interlocked.Exchange(ref counter, 0);
-						elapsed = sw.Elapsed;
-						if (c > 0)
-						{
-							//Console.Out.WriteLine(c / elapsed.TotalSeconds);
-						}
-					});
-
 				using (pubSub
-					.Observe<object>("*", "group")
-					.Subscribe(_ =>
-					{
-						Console.Out.WriteLine(_);
-						Interlocked.Increment(ref counter);
-					}))
+					.Observe<object>("*")
+					.Subscribe(_ => { Console.Out.WriteLine(_); }))
 				{
 					while (true)
 					{
 						Console.ReadLine();
-						sw.Restart();
-						foreach (int i in Enumerable.Range(0, 1))
-						{
-							pubSub.Publish("a", "Hello", "group");
-						}
-
-						Console.Out.WriteLine(sw.Elapsed);
+						pubSub.Publish("a", "Hello");
 					}
 				}
 			}
