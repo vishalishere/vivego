@@ -1,12 +1,12 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Threading;
 
 namespace vivego.core
 {
 	public abstract class DisposableBase : IDisposable
 	{
-		private readonly List<IDisposable> _disposables = new List<IDisposable>();
+		private readonly ConcurrentStack<IDisposable> _disposables = new ConcurrentStack<IDisposable>();
 
 		private readonly Lazy<CancellationTokenSource> _lazyCancellationTokenSource =
 			new Lazy<CancellationTokenSource>(() => new CancellationTokenSource(), true);
@@ -25,12 +25,10 @@ namespace vivego.core
 				_lazyCancellationTokenSource.Value.Dispose();
 			}
 
-			foreach (IDisposable disposable in _disposables)
+			while(_disposables.TryPop(out IDisposable disposable))
 			{
 				disposable.Dispose();
 			}
-
-			_disposables.Clear();
 
 			// Take yourself off the finalization queue
 			// to prevent finalization from executing a second time.
@@ -44,7 +42,7 @@ namespace vivego.core
 
 		protected void RegisterDisposable(IDisposable disposable)
 		{
-			_disposables.Insert(0, disposable);
+			_disposables.Push(disposable);
 		}
 
 		/// <summary>
