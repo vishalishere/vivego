@@ -1,0 +1,14 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "vivego.Proto.Messages";
+
+import "Reference/Protos.proto";
+
+package vivego.Proto;
+
+message Alive {
+	string Host = 1;
+	int32 Port = 2;
+	int32 MemberId = 3;
+	repeated string Kinds = 4;
+}

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="DotNetty.Transport" Version="0.4.6" />
+		<PackageReference Include="System.Reactive" Version="3.1.1" />
+		
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\vivego.core\vivego.core.csproj" />
+		<ProjectReference Include="..\vivego.Discovery\vivego.Discovery.csproj" />
+	</ItemGroup>
+
+</Project>

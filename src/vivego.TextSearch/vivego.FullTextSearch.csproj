@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<AssemblyName>vivego.FullTextSearch</AssemblyName>
+		<RootNamespace>vivego.FullTextSearch</RootNamespace>
+	</PropertyGroup>
+
+</Project>

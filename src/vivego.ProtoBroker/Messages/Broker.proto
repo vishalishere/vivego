@@ -1,0 +1,41 @@
+﻿syntax = "proto3";
+
+package vivego.ProtoBroker;
+
+option csharp_namespace = "vivego.ProtoBroker.Messages";
+
+import "Protos.proto";
+
+message GetPublisherPiDs {}
+
+message GetPublisherPiDsResponse {
+	repeated actor.PID PIds = 1;
+}
+
+message Subscribe {
+	actor.PID ConsumerActor = 1;
+	string Type = 2;
+	string Topic = 3;
+}
+
+message Subscription {
+	bytes SubscriptionId = 1;
+	Subscribe Subscriber = 2;
+}
+
+message SubscribeAck {
+	bytes SubscriptionId = 1;
+}
+
+message Unsubscribe {
+	bytes SubscriptionId = 1;
+}
+
+message UnsubscribeAck {
+	bool Success = 1;
+}
+
+message Publish {
+	string Topic = 1;
+	bytes Message = 2;
+}

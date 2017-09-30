@@ -1,0 +1,19 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "vivego.Proto.PubSub.Messages";
+
+import "Reference/Protos.proto";
+
+package vivego.Proto.PubSub;
+
+message Subscription {
+	string Topic = 1;
+	string Group = 2;
+	actor.PID PID = 3;
+}
+
+message Message {
+	string Topic = 1;
+	string Group = 2;
+	bytes Data = 3;
+}
