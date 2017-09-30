@@ -34,6 +34,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.Serializer.Abstracti
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProtoBroker.Playground", "src\vivego.Broker.Playground\ProtoBroker.Playground.csproj", "{809B0B54-39A6-4582-B846-A0E5303DF67F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vivego.WampSharp.Proto.SubPub.Backplane", "src\vivego.WampSharp.Proto.SubPub.Backplane\vivego.WampSharp.Proto.SubPub.Backplane.csproj", "{C606F25A-0868-46F1-B92C-55AD5119EF43}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vivego.WampSharp.Proto.SubPub.Backplane.Playground", "src\vivego.WampSharp.Proto.SubPub.Backplane.Playground\vivego.WampSharp.Proto.SubPub.Backplane.Playground.csproj", "{B5C0871D-BEF1-4749-BD9C-F37AEFBEF85B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -80,6 +84,14 @@ Global
 		{809B0B54-39A6-4582-B846-A0E5303DF67F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{809B0B54-39A6-4582-B846-A0E5303DF67F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{809B0B54-39A6-4582-B846-A0E5303DF67F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C606F25A-0868-46F1-B92C-55AD5119EF43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C606F25A-0868-46F1-B92C-55AD5119EF43}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C606F25A-0868-46F1-B92C-55AD5119EF43}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C606F25A-0868-46F1-B92C-55AD5119EF43}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5C0871D-BEF1-4749-BD9C-F37AEFBEF85B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5C0871D-BEF1-4749-BD9C-F37AEFBEF85B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5C0871D-BEF1-4749-BD9C-F37AEFBEF85B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5C0871D-BEF1-4749-BD9C-F37AEFBEF85B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
