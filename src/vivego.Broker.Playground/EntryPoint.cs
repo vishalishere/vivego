@@ -49,17 +49,35 @@ namespace ProtoBroker.Playground
 			}
 		}
 
-		public static IPublishSubscribe Auto(string clusterId)
+		private static IPEndPoint[] QueryEndPointsUdp(string clusterId, IPAddress ipAddress, int serverPort)
 		{
-			IPAddress ipAddress = GetMyIpAddress().First();
-			int serverPort = PortUtils.FindAvailablePort();
 			IPEndPoint protoActorServerEndpoint = new IPEndPoint(ipAddress, serverPort);
 			new UdpBroadcastServer(protoActorServerEndpoint, clusterId).Run();
 			UdpDiscoverClientFactory clientFactory =
 				new UdpDiscoverClientFactory(clusterId, replyWaitTimeout: TimeSpan.FromSeconds(2));
 			IPEndPoint[] endPoints = clientFactory.DiscoverEndPoints();
+			return endPoints;
+		}
 
+		private static IPEndPoint[] QueryEndPointsMulticast(string clusterId, IPAddress ipAddress, int serverPort)
+		{
+			IPEndPoint protoActorServerEndpoint = new IPEndPoint(ipAddress, serverPort);
+			new DiscoverMulticastServer(protoActorServerEndpoint, clusterId).Run();
+			MulticastDiscoverClientFactory clientFactory =
+				new MulticastDiscoverClientFactory(clusterId, replyWaitTimeout: TimeSpan.FromSeconds(2));
+			IPEndPoint[] endPoints = clientFactory.DiscoverEndPoints();
+			return endPoints;
+		}
+
+		public static IPublishSubscribe Auto(string clusterId)
+		{
+			IPAddress ipAddress = GetMyIpAddress().First();
+			int serverPort = PortUtils.FindAvailablePort();
+			IPEndPoint[] endPoints = QueryEndPointsMulticast(clusterId, ipAddress, serverPort);
 			ILoggerFactory loggerFactory = new LoggerFactory().AddConsole(LogLevel.Debug);
+			loggerFactory
+				.CreateLogger("Auto")
+				.LogDebug("Discovered endpoints: {0}", string.Join(";", endPoints.Select(endPoint => endPoint.ToString())));
 			ISerializer<byte[]> serializer = new MessagePackSerializer();
 			IPublishSubscribe pubSub = PublishSubscribe.StartCluster(clusterId,
 				ipAddress.ToString(),
