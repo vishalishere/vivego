@@ -15,6 +15,7 @@ namespace vivego.Proto.PubSub
 	internal class PubSubRouterActor : DisposableBase
 	{
 		private readonly ILogger<PubSubRouterActor> _logger;
+		private readonly Dictionary<string, PID[]> _lookupCache = new Dictionary<string, PID[]>();
 
 		private readonly Dictionary<string, (Counter Counter, Dictionary<PID, SubscriptionInfo> Subscriptions)>
 			_subscriptions = new Dictionary<string, (Counter, Dictionary<PID, SubscriptionInfo>)>();
@@ -35,6 +36,24 @@ namespace vivego.Proto.PubSub
 
 		public PID Pid { get; }
 
+		private static string MakeCacheKey(string topic, string group)
+		{
+			return $"__{topic}:{group}";
+		}
+
+		private PID[] Lookup(Message message, Dictionary<PID, SubscriptionInfo> subscriptionDictionary)
+		{
+			string cacheKey = MakeCacheKey(message.Topic, message.Group);
+			if (!_lookupCache.TryGetValue(cacheKey, out PID[] subscriptions))
+			{
+				subscriptions = subscriptionDictionary.Where(pair => pair.Value.Matches(message.Topic)).Select(pair => pair.Key)
+					.ToArray();
+				_lookupCache.Add(cacheKey, subscriptions);
+			}
+
+			return subscriptions;
+		}
+
 		private Task ReceiveAsync(IContext context)
 		{
 			switch (context.Message)
@@ -51,7 +70,8 @@ namespace vivego.Proto.PubSub
 						.ToArray();
 					foreach (PID routerPid in _pubSubRouters)
 					{
-						foreach (var pair in _subscriptions)
+						foreach (KeyValuePair<string, (Counter Counter, Dictionary<PID, SubscriptionInfo> Subscriptions)> pair in
+							_subscriptions)
 						{
 							foreach (KeyValuePair<PID, SubscriptionInfo> subscriptionInfo in pair.Value.Subscriptions)
 							{
@@ -71,18 +91,18 @@ namespace vivego.Proto.PubSub
 					if (_subscriptions.TryGetValue(message.Group,
 						out (Counter Counter, Dictionary<PID, SubscriptionInfo> Subscriptions) subscriptionDictionary))
 					{
+						PID[] pids = Lookup(message, subscriptionDictionary.Subscriptions);
 						if (string.IsNullOrEmpty(message.Group))
 						{
-							foreach (KeyValuePair<PID, SubscriptionInfo> pair in subscriptionDictionary.Subscriptions)
+							foreach (PID pid in pids)
 							{
-								pair.Key.Tell(message);
+								pid.Tell(message);
 							}
 						}
 						else
 						{
 							int counter = subscriptionDictionary.Counter.Next();
-							Dictionary<PID, SubscriptionInfo>.KeyCollection keys = subscriptionDictionary.Subscriptions.Keys;
-							PID pid = keys.ToArray()[counter % keys.Count];
+							PID pid = pids[counter % pids.Length];
 							pid.Tell(message);
 						}
 					}
@@ -104,6 +124,7 @@ namespace vivego.Proto.PubSub
 						subscriptionInfo = new SubscriptionInfo(subscription);
 						subscriptions.Subscriptions.Add(subscription.PID, subscriptionInfo);
 						context.Watch(subscription.PID);
+						_lookupCache.Clear();
 						foreach (PID routerPid in _pubSubRouters)
 						{
 							routerPid.Tell(subscription);
@@ -119,6 +140,7 @@ namespace vivego.Proto.PubSub
 					{
 						if (pair.Value.Subscriptions.TryGetValue(terminated.Who, out SubscriptionInfo subscriptionInfo))
 						{
+							_lookupCache.Clear();
 							pair.Value.Subscriptions.Remove(terminated.Who);
 							_logger.LogDebug("Removed subscription from: '{0}', with topic '{1}' and group: '{2}'",
 								subscriptionInfo.Subscription.PID, subscriptionInfo.Subscription.Topic, subscriptionInfo.Subscription.Group);
