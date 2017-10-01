@@ -1,10 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Authors>Esben Carlsen</Authors>
+		<Company>Vivego AB</Company>
+		<Description>
+			Distributed Publish Subscribe based on proto.actor
+		</Description>
+		<Copyright>Vivego AB</Copyright>
+		<PackageLicenseUrl>https://github.com/esbencarlsen/vivego/blob/master/LICENSE</PackageLicenseUrl>
+		<PackageProjectUrl>https://github.com/esbencarlsen/vivego</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/esbencarlsen/vivego</RepositoryUrl>
+		<RepositoryType>Github</RepositoryType>
+		<Version>1.0.0.26</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="MSBump" Version="2.3.0" PrivateAssets="All" />
 		<PackageReference Include="Google.Protobuf.Tools" Version="3.4.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.0" />
 		<PackageReference Include="Proto.Cluster" Version="0.1.13" />
@@ -16,5 +31,13 @@
 		<ProjectReference Include="..\vivego.Proto.Actor.core\vivego.Proto.csproj" />
 		<ProjectReference Include="..\vivego.Serializer.Abstractions\vivego.Serializer.Abstractions.csproj" />
 	</ItemGroup>
+
+	<PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
+		<BumpLabel>dev</BumpLabel>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)'=='Release' ">
+		<BumpRevision>True</BumpRevision>
+		<BumpResetLabel>dev</BumpResetLabel>
+	</PropertyGroup>
 
 </Project>

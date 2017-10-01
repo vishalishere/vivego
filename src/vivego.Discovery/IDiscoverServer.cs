@@ -1,6 +1,6 @@
 using System;
 
-namespace vivego.Discovery
+namespace vivego.Discovery.Abstactions
 {
 	public interface IDiscoverServer
 	{

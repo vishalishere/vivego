@@ -1,15 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>netcoreapp2.0</TargetFramework>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Authors>Esben Carlsen</Authors>
+		<Company>Vivego AB</Company>
+		<Description>
+			MessagePack Serializer Wrapper
+		</Description>
+		<Copyright>Vivego AB</Copyright>
+		<PackageLicenseUrl>https://github.com/esbencarlsen/vivego/blob/master/LICENSE</PackageLicenseUrl>
+		<PackageProjectUrl>https://github.com/esbencarlsen/vivego</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/esbencarlsen/vivego</RepositoryUrl>
+		<RepositoryType>Github</RepositoryType>
+		<Version>1.0.0.26</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="MSBump" Version="2.3.0" PrivateAssets="All" />
 		<PackageReference Include="MessagePack" Version="1.6.1.2" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <ProjectReference Include="..\vivego.Serializer.Abstractions\vivego.Serializer.Abstractions.csproj" />
 	</ItemGroup>
+
+	<PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
+		<BumpLabel>dev</BumpLabel>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)'=='Release' ">
+		<BumpRevision>True</BumpRevision>
+		<BumpResetLabel>dev</BumpResetLabel>
+	</PropertyGroup>
 
 </Project>

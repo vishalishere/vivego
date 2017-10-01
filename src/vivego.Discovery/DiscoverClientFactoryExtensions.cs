@@ -3,7 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Reactive.Linq;
 
-namespace vivego.Discovery
+namespace vivego.Discovery.Abstactions
 {
 	public static class DiscoverClientFactoryExtensions
 	{

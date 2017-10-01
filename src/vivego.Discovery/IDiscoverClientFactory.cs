@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace vivego.Discovery
+namespace vivego.Discovery.Abstactions
 {
 	public interface IDiscoverClientFactory
 	{

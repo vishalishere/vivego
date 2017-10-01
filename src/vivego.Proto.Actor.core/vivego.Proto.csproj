@@ -1,20 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<LangVersion>latest</LangVersion>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Authors>Esben Carlsen</Authors>
+		<Company>Vivego AB</Company>
+		<Description>Helper classes proto.actor
+Seed based Cluster Provider, no need to run consul</Description>
+		<Copyright>Vivego AB</Copyright>
+		<PackageLicenseUrl>https://github.com/esbencarlsen/vivego/blob/master/LICENSE</PackageLicenseUrl>
+		<PackageProjectUrl>https://github.com/esbencarlsen/vivego</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/esbencarlsen/vivego</RepositoryUrl>
+		<RepositoryType>Github</RepositoryType>
+		<Version>1.0.0.26</Version>
+		<Product>vivego.Proto</Product>
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="MSBump" Version="2.3.0" PrivateAssets="All" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.0" />
-		<PackageReference Include="Proto.Actor" Version="0.1.13" />
 		<PackageReference Include="Proto.Cluster" Version="0.1.13" />
-		<PackageReference Include="Proto.Persistence" Version="0.1.13" />
 		<PackageReference Include="System.Reactive" Version="3.1.1" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\vivego.core\vivego.core.csproj" />
 	</ItemGroup>
+
+	<PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
+		<BumpLabel>dev</BumpLabel>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)'=='Release' ">
+		<BumpRevision>True</BumpRevision>
+		<BumpResetLabel>dev</BumpResetLabel>
+	</PropertyGroup>
 
 </Project>

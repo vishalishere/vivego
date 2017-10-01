@@ -3,12 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.Discovery", "src\vivego.Discovery\vivego.Discovery.csproj", "{8898E2F4-047B-401A-933F-F3954CAC6904}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.Discovery.Abstactions", "src\vivego.Discovery\vivego.Discovery.Abstactions.csproj", "{8898E2F4-047B-401A-933F-F3954CAC6904}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.Discovery.DotNetty", "src\vivego.Discovery.DotNetty\vivego.Discovery.DotNetty.csproj", "{4360866F-C054-4DB2-AF01-8405AFAF665B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{85C93B09-58B6-496F-B9EC-06D7E82C812A}"
 	ProjectSection(SolutionItems) = preProject
+		Build.ps1 = Build.ps1
+		CleanVisualStudioProject.ps1 = CleanVisualStudioProject.ps1
 		global.json = global.json
 		NuGet.Config = NuGet.Config
 		Readme.md = Readme.md
@@ -34,9 +36,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.Serializer.Abstracti
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProtoBroker.Playground", "src\vivego.Broker.Playground\ProtoBroker.Playground.csproj", "{809B0B54-39A6-4582-B846-A0E5303DF67F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vivego.WampSharp.Proto.SubPub.Backplane", "src\vivego.WampSharp.Proto.SubPub.Backplane\vivego.WampSharp.Proto.SubPub.Backplane.csproj", "{C606F25A-0868-46F1-B92C-55AD5119EF43}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.WampSharp.Proto.SubPub.Backplane", "src\vivego.WampSharp.Proto.SubPub.Backplane\vivego.WampSharp.Proto.SubPub.Backplane.csproj", "{C606F25A-0868-46F1-B92C-55AD5119EF43}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vivego.WampSharp.Proto.SubPub.Backplane.Playground", "src\vivego.WampSharp.Proto.SubPub.Backplane.Playground\vivego.WampSharp.Proto.SubPub.Backplane.Playground.csproj", "{B5C0871D-BEF1-4749-BD9C-F37AEFBEF85B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.WampSharp.Proto.SubPub.Backplane.Playground", "src\vivego.WampSharp.Proto.SubPub.Backplane.Playground\vivego.WampSharp.Proto.SubPub.Backplane.Playground.csproj", "{B5C0871D-BEF1-4749-BD9C-F37AEFBEF85B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,18 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>latest</LangVersion>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Authors>Esben Carlsen</Authors>
+		<Company>Vivego AB</Company>
+		<Description>Discovery implementation using DotNetty</Description>
+		<Copyright>Vivego AB</Copyright>
+		<PackageLicenseUrl>https://github.com/esbencarlsen/vivego/blob/master/LICENSE</PackageLicenseUrl>
+		<PackageProjectUrl>https://github.com/esbencarlsen/vivego</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/esbencarlsen/vivego</RepositoryUrl>
+		<RepositoryType>Github</RepositoryType>
+		<Version>1.0.0.17</Version>
 	</PropertyGroup>
+
 
 	<ItemGroup>
 		<PackageReference Include="DotNetty.Transport" Version="0.4.6" />
 		<PackageReference Include="System.Reactive" Version="3.1.1" />
-		
+		<PackageReference Include="MSBump" Version="2.3.0" PrivateAssets="All" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\vivego.core\vivego.core.csproj" />
-		<ProjectReference Include="..\vivego.Discovery\vivego.Discovery.csproj" />
+		<ProjectReference Include="..\vivego.Discovery\vivego.Discovery.Abstactions.csproj" />
 	</ItemGroup>
+
+	<PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
+		<BumpLabel>dev</BumpLabel>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)'=='Release' ">
+		<BumpRevision>True</BumpRevision>
+		<BumpResetLabel>dev</BumpResetLabel>
+	</PropertyGroup>
 
 </Project>

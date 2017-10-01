@@ -3,20 +3,23 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<TargetFramework>netstandard2.0</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<Authors>Esben Carlsen</Authors>
+		<Authors>vivego.Discovery.Abstactions</Authors>
 		<Company>Vivego AB</Company>
-		<Description>Helper classes commonly used in development</Description>
+		<Description>Abstraction for discovery</Description>
 		<Copyright>Vivego AB</Copyright>
 		<PackageLicenseUrl>https://github.com/esbencarlsen/vivego/blob/master/LICENSE</PackageLicenseUrl>
 		<PackageProjectUrl>https://github.com/esbencarlsen/vivego</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/esbencarlsen/vivego</RepositoryUrl>
 		<RepositoryType>Github</RepositoryType>
-		<Version>1.0.0.24</Version>
+		<Version>1.0.0.14</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="System.Reactive" Version="3.1.1" />
 		<PackageReference Include="MSBump" Version="2.3.0" PrivateAssets="All" />
 	</ItemGroup>
 

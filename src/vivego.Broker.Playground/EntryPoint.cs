@@ -8,7 +8,7 @@ using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 
 using vivego.core;
-using vivego.Discovery;
+using vivego.Discovery.Abstactions;
 using vivego.Discovery.DotNetty;
 using vivego.Proto.ClusterProvider;
 using vivego.Proto.PubSub;

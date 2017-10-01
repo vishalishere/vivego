@@ -11,6 +11,8 @@ using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
 
+using vivego.Discovery.Abstactions;
+
 namespace vivego.Discovery.DotNetty
 {
 	public class UdpBroadcastServer : SimpleChannelInboundHandler<DatagramPacket>, IDiscoverServer
