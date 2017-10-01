@@ -86,7 +86,7 @@ namespace vivego.WampSharp.Proto.SubPub.Backplane
 			IPublishSubscribe pubSub = PublishSubscribe.StartCluster(realm.Name,
 				ipAddress.ToString(),
 				serverPort,
-				new StaticClusterProvider(TimeSpan.FromSeconds(1), endPoints),
+				new SeededLocalClusterProvider(TimeSpan.FromSeconds(1), endPoints),
 				serializer,
 				loggerFactory
 			);

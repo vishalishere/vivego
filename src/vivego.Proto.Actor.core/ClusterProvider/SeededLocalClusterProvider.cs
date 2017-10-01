@@ -18,28 +18,28 @@ using ProtosReflection = vivego.Proto.Messages.ProtosReflection;
 
 namespace vivego.Proto.ClusterProvider
 {
-	public class StaticClusterProvider : DisposableBase, IClusterProvider
+	public class SeededLocalClusterProvider : DisposableBase, IClusterProvider
 	{
 		private readonly TimeSpan _livenessPublishInterval;
 		private PID[] _serverPids;
 		private readonly ISubject<IDictionary<string, Alive>> _clusterTopologyEventSubject = 
 			Subject.Synchronize(new Subject<IDictionary<string, Alive>>());
 
-		static StaticClusterProvider()
+		static SeededLocalClusterProvider()
 		{
 			Serialization.RegisterFileDescriptor(ProtosReflection.Descriptor);
 		}
 
-		public StaticClusterProvider(
+		public SeededLocalClusterProvider(
 			TimeSpan livenessPublishInterval,
-			params IPEndPoint[] protoActorServerEndpoints)
+			params IPEndPoint[] seedsEndpoints)
 		{
 			_livenessPublishInterval = livenessPublishInterval;
 
 			Actor.SpawnNamed(Actor.FromProducer(() => new ClusterProviderIsAliveActor(_clusterTopologyEventSubject)),
 				typeof(ClusterProviderIsAliveActor).FullName);
 
-			_serverPids = protoActorServerEndpoints
+			_serverPids = seedsEndpoints
 				.Select(serverEndPoint =>
 				{
 					PID pid = new PID(serverEndPoint.ToString(), typeof(ClusterProviderIsAliveActor).FullName);
@@ -110,41 +110,6 @@ namespace vivego.Proto.ClusterProvider
 						serverPiD.Tell(alive);
 					}
 				}, CancellationToken);
-		}
-	}
-
-	internal class ClusterProviderIsAliveActor : IActor
-	{
-		private readonly IObserver<IDictionary<string, Alive>> _observer;
-		private readonly IDictionary<string, Alive> _watchList = new Dictionary<string, Alive>();
-
-		public ClusterProviderIsAliveActor(IObserver<IDictionary<string, Alive>> observer)
-		{
-			_observer = observer;
-		}
-
-		public Task ReceiveAsync(IContext context)
-		{
-			switch (context.Message)
-			{
-				case Alive alive:
-					string key = $"{alive.Host}:{alive.Port}";
-					bool removed = _watchList.Remove(key);
-					_watchList.Add(key, alive);
-					if (!removed)
-					{
-						context.Watch(new PID($"{alive.Host}:{alive.Port}", typeof(ClusterProviderIsAliveActor).FullName));
-					}
-
-					_observer.OnNext(_watchList);
-					break;
-				case Terminated terminated:
-					_watchList.Remove(terminated.Who.Address);
-					_observer.OnNext(_watchList);
-					break;
-			}
-
-			return Task.CompletedTask;
 		}
 	}
 }

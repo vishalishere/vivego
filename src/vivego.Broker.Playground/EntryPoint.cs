@@ -72,17 +72,18 @@ namespace ProtoBroker.Playground
 		public static IPublishSubscribe Auto(string clusterId)
 		{
 			IPAddress ipAddress = GetMyIpAddress().First();
-			int serverPort = PortUtils.FindAvailablePort();
-			IPEndPoint[] endPoints = QueryEndPointsMulticast(clusterId, ipAddress, serverPort);
+			int serverPort = PortUtils.FindAvailablePortIncrementally(25000);
+			//IPEndPoint[] endPoints = QueryEndPointsMulticast(clusterId, ipAddress, serverPort);
+			var endPoints = new[] { new IPEndPoint(IPAddress.Parse(ipAddress.ToString()), 25000) };
 			ILoggerFactory loggerFactory = new LoggerFactory().AddConsole(LogLevel.Debug);
 			loggerFactory
 				.CreateLogger("Auto")
-				.LogDebug("Discovered endpoints: {0}", string.Join(";", endPoints.Select(endPoint => endPoint.ToString())));
+				.LogDebug("Seed endpoints: {0}", string.Join(";", endPoints.Select(endPoint => endPoint.ToString())));
 			ISerializer<byte[]> serializer = new MessagePackSerializer();
 			IPublishSubscribe pubSub = PublishSubscribe.StartCluster(clusterId,
 				ipAddress.ToString(),
 				serverPort,
-				new StaticClusterProvider(TimeSpan.FromSeconds(1), endPoints),
+				new SeededLocalClusterProvider(TimeSpan.FromSeconds(1), endPoints),
 				serializer,
 				loggerFactory
 			);
