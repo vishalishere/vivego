@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netcoreapp2.0</TargetFramework>
+		<TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<Authors>Esben Carlsen</Authors>
 		<Company>Vivego AB</Company>
@@ -14,7 +14,7 @@
 		<PackageProjectUrl>https://github.com/esbencarlsen/vivego</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/esbencarlsen/vivego</RepositoryUrl>
 		<RepositoryType>Github</RepositoryType>
-		<Version>1.0.0.33</Version>
+		<Version>1.0.0.34</Version>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
+		<TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<LangVersion>latest</LangVersion>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -15,7 +15,7 @@ Seed based Cluster Provider, no need to run consul</Description>
 		<PackageProjectUrl>https://github.com/esbencarlsen/vivego</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/esbencarlsen/vivego</RepositoryUrl>
 		<RepositoryType>Github</RepositoryType>
-		<Version>1.0.0.38</Version>
+		<Version>1.0.0.39</Version>
 		<Product>vivego.Proto</Product>
 	</PropertyGroup>
 
