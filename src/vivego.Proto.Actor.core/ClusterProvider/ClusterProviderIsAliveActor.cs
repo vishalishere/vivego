@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Proto;
@@ -10,10 +11,10 @@ namespace vivego.Proto.ClusterProvider
 {
 	internal class ClusterProviderIsAliveActor : IActor
 	{
-		private readonly IObserver<IDictionary<string, Alive>> _observer;
-		private readonly IDictionary<string, Alive> _watchList = new Dictionary<string, Alive>();
+		private readonly IObserver<Alive[]> _observer;
+		private readonly IDictionary<PID, Alive> _watchList = new Dictionary<PID, Alive>();
 
-		public ClusterProviderIsAliveActor(IObserver<IDictionary<string, Alive>> observer)
+		public ClusterProviderIsAliveActor(IObserver<Alive[]> observer)
 		{
 			_observer = observer;
 		}
@@ -23,26 +24,39 @@ namespace vivego.Proto.ClusterProvider
 			switch (context.Message)
 			{
 				case Alive alive:
-					string key = $"{alive.Host}:{alive.Port}";
-					bool removed = _watchList.Remove(key);
-					_watchList.Add(key, alive);
-					if (!removed)
+					if (!_watchList.ContainsKey(alive.AlivePID))
 					{
-						PID pid = new PID($"{alive.Host}:{alive.Port}", typeof(ClusterProviderIsAliveActor).FullName);
-						context.Watch(pid);
+						_watchList.Add(alive.AlivePID, alive);
+						_observer.OnNext(_watchList.Select(pair => pair.Value).ToArray());
 
 						// Tell everybody about the change
-						foreach (KeyValuePair<string, Alive> keyValuePair in _watchList)
+						foreach (KeyValuePair<PID, Alive> keyValuePair in _watchList)
 						{
-							pid.Tell(keyValuePair.Value);
+							if (alive.AlivePID.Equals(keyValuePair.Key))
+							{
+								continue;
+							}
+
+							alive.AlivePID.Tell(keyValuePair.Value);
 						}
+
+						// Hack: Defer watch, because Terminated is sent incorrectly always when remote reconnecting
+						PID self = context.Self;
+						Task.Delay(100).ContinueWith(_ => self.Tell(alive.AlivePID));
 					}
 
-					_observer.OnNext(_watchList);
+					break;
+				case PID deferWatchPid:
+					context.Watch(deferWatchPid);
 					break;
 				case Terminated terminated:
-					_watchList.Remove(terminated.Who.Address);
-					_observer.OnNext(_watchList);
+					if (terminated.AddressTerminated
+						&& _watchList.Remove(terminated.Who))
+					{
+						_watchList.Remove(terminated.Who);
+						_observer.OnNext(_watchList.Select(pair => pair.Value).ToArray());
+					}
+
 					break;
 			}
 

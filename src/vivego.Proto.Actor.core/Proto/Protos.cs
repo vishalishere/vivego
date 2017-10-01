@@ -23,13 +23,13 @@ namespace vivego.Proto.Messages {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "CgxQcm90b3MucHJvdG8SDHZpdmVnby5Qcm90bxoWUmVmZXJlbmNlL1Byb3Rv",
-            "cy5wcm90byJECgVBbGl2ZRIMCgRIb3N0GAEgASgJEgwKBFBvcnQYAiABKAUS",
-            "EAoITWVtYmVySWQYAyABKAUSDQoFS2luZHMYBCADKAlCGKoCFXZpdmVnby5Q",
-            "cm90by5NZXNzYWdlc2IGcHJvdG8z"));
+            "cy5wcm90byJGCgVBbGl2ZRIcCghBbGl2ZVBJRBgBIAEoCzIKLmFjdG9yLlBJ",
+            "RBIQCghNZW1iZXJJZBgCIAEoBRINCgVLaW5kcxgDIAMoCUIYqgIVdml2ZWdv",
+            "LlByb3RvLk1lc3NhZ2VzYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Proto.ProtosReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::vivego.Proto.Messages.Alive), global::vivego.Proto.Messages.Alive.Parser, new[]{ "Host", "Port", "MemberId", "Kinds" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::vivego.Proto.Messages.Alive), global::vivego.Proto.Messages.Alive.Parser, new[]{ "AlivePID", "MemberId", "Kinds" }, null, null, null)
           }));
     }
     #endregion
@@ -60,8 +60,7 @@ namespace vivego.Proto.Messages {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Alive(Alive other) : this() {
-      host_ = other.host_;
-      port_ = other.port_;
+      AlivePID = other.alivePID_ != null ? other.AlivePID.Clone() : null;
       memberId_ = other.memberId_;
       kinds_ = other.kinds_.Clone();
     }
@@ -71,30 +70,19 @@ namespace vivego.Proto.Messages {
       return new Alive(this);
     }
 
-    /// <summary>Field number for the "Host" field.</summary>
-    public const int HostFieldNumber = 1;
-    private string host_ = "";
+    /// <summary>Field number for the "AlivePID" field.</summary>
+    public const int AlivePIDFieldNumber = 1;
+    private global::Proto.PID alivePID_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string Host {
-      get { return host_; }
+    public global::Proto.PID AlivePID {
+      get { return alivePID_; }
       set {
-        host_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-      }
-    }
-
-    /// <summary>Field number for the "Port" field.</summary>
-    public const int PortFieldNumber = 2;
-    private int port_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int Port {
-      get { return port_; }
-      set {
-        port_ = value;
+        alivePID_ = value;
       }
     }
 
     /// <summary>Field number for the "MemberId" field.</summary>
-    public const int MemberIdFieldNumber = 3;
+    public const int MemberIdFieldNumber = 2;
     private int memberId_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int MemberId {
@@ -105,9 +93,9 @@ namespace vivego.Proto.Messages {
     }
 
     /// <summary>Field number for the "Kinds" field.</summary>
-    public const int KindsFieldNumber = 4;
+    public const int KindsFieldNumber = 3;
     private static readonly pb::FieldCodec<string> _repeated_kinds_codec
-        = pb::FieldCodec.ForString(34);
+        = pb::FieldCodec.ForString(26);
     private readonly pbc::RepeatedField<string> kinds_ = new pbc::RepeatedField<string>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<string> Kinds {
@@ -127,8 +115,7 @@ namespace vivego.Proto.Messages {
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Host != other.Host) return false;
-      if (Port != other.Port) return false;
+      if (!object.Equals(AlivePID, other.AlivePID)) return false;
       if (MemberId != other.MemberId) return false;
       if(!kinds_.Equals(other.kinds_)) return false;
       return true;
@@ -137,8 +124,7 @@ namespace vivego.Proto.Messages {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Host.Length != 0) hash ^= Host.GetHashCode();
-      if (Port != 0) hash ^= Port.GetHashCode();
+      if (alivePID_ != null) hash ^= AlivePID.GetHashCode();
       if (MemberId != 0) hash ^= MemberId.GetHashCode();
       hash ^= kinds_.GetHashCode();
       return hash;
@@ -151,16 +137,12 @@ namespace vivego.Proto.Messages {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Host.Length != 0) {
+      if (alivePID_ != null) {
         output.WriteRawTag(10);
-        output.WriteString(Host);
-      }
-      if (Port != 0) {
-        output.WriteRawTag(16);
-        output.WriteInt32(Port);
+        output.WriteMessage(AlivePID);
       }
       if (MemberId != 0) {
-        output.WriteRawTag(24);
+        output.WriteRawTag(16);
         output.WriteInt32(MemberId);
       }
       kinds_.WriteTo(output, _repeated_kinds_codec);
@@ -169,11 +151,8 @@ namespace vivego.Proto.Messages {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Host.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(Host);
-      }
-      if (Port != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Port);
+      if (alivePID_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(AlivePID);
       }
       if (MemberId != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(MemberId);
@@ -187,11 +166,11 @@ namespace vivego.Proto.Messages {
       if (other == null) {
         return;
       }
-      if (other.Host.Length != 0) {
-        Host = other.Host;
-      }
-      if (other.Port != 0) {
-        Port = other.Port;
+      if (other.alivePID_ != null) {
+        if (alivePID_ == null) {
+          alivePID_ = new global::Proto.PID();
+        }
+        AlivePID.MergeFrom(other.AlivePID);
       }
       if (other.MemberId != 0) {
         MemberId = other.MemberId;
@@ -208,18 +187,17 @@ namespace vivego.Proto.Messages {
             input.SkipLastField();
             break;
           case 10: {
-            Host = input.ReadString();
+            if (alivePID_ == null) {
+              alivePID_ = new global::Proto.PID();
+            }
+            input.ReadMessage(alivePID_);
             break;
           }
           case 16: {
-            Port = input.ReadInt32();
-            break;
-          }
-          case 24: {
             MemberId = input.ReadInt32();
             break;
           }
-          case 34: {
+          case 26: {
             kinds_.AddEntriesFrom(input, _repeated_kinds_codec);
             break;
           }

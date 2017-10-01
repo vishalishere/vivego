@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Reactive.Linq;
@@ -20,10 +19,9 @@ namespace vivego.Proto.ClusterProvider
 {
 	public class SeededLocalClusterProvider : DisposableBase, IClusterProvider
 	{
-		private readonly PID _localClusterProviderIsAliveActor;
 		private PID[] _serverPids;
-		private readonly ISubject<IDictionary<string, Alive>> _clusterTopologyEventSubject = 
-			Subject.Synchronize(new Subject<IDictionary<string, Alive>>());
+		private readonly ISubject<Alive[]> _clusterTopologyEventSubject = 
+			Subject.Synchronize(new Subject<Alive[]>());
 
 		static SeededLocalClusterProvider()
 		{
@@ -33,16 +31,12 @@ namespace vivego.Proto.ClusterProvider
 		public SeededLocalClusterProvider(
 			params IPEndPoint[] seedsEndpoints)
 		{
-			_localClusterProviderIsAliveActor = Actor.SpawnNamed(Actor.FromProducer(() => new ClusterProviderIsAliveActor(_clusterTopologyEventSubject)),
-				typeof(ClusterProviderIsAliveActor).FullName);
-
 			_serverPids = seedsEndpoints
 				.Select(serverEndPoint =>
 				{
 					PID pid = new PID(serverEndPoint.ToString(), typeof(ClusterProviderIsAliveActor).FullName);
 					return pid;
 				})
-				.AddToEnd(_localClusterProviderIsAliveActor)
 				.ToArray();
 		}
 
@@ -68,7 +62,12 @@ namespace vivego.Proto.ClusterProvider
 				.Select(alives =>
 				{
 					ClusterTopologyEvent newTopology = new ClusterTopologyEvent(alives
-						.Select(alive => new MemberStatus(alive.Value.MemberId, alive.Value.Host, alive.Value.Port, alive.Value.Kinds, true))
+						.Where(a => !a.AlivePID.Address.Equals("nonhost"))
+						.Select(a =>
+						{
+							Uri.TryCreate($"tcp://{a.AlivePID.Address}", UriKind.Absolute, out var uri);
+							return new MemberStatus(a.MemberId, uri.Host, uri.Port, a.Kinds, true);
+						})
 						.ToArray());
 					return newTopology;
 				})
@@ -82,29 +81,23 @@ namespace vivego.Proto.ClusterProvider
 							PID pid = new PID(serverEndPoint.Address, typeof(ClusterProviderIsAliveActor).FullName);
 							return pid;
 						})
-						.AddToEnd(_localClusterProviderIsAliveActor)
+						//.AddToEnd(_localClusterProviderIsAliveActor)
 						.ToArray();
 					Actor.EventStream.Publish(clusterTopologyEvent);
+					Console.Out.WriteLine("Topology: " + string.Join(";", _serverPids.Select(x => x.ToString()).ToArray()));
 				}, CancellationToken);
 
-			TellIsAlive();
-		}
-
-		private void TellIsAlive()
-		{
+			Props props = Actor.FromProducer(() => new ClusterProviderIsAliveActor(_clusterTopologyEventSubject));
+			PID isAlivePid = Actor.SpawnNamed(props, typeof(ClusterProviderIsAliveActor).FullName);
 			int memberId = Process.GetCurrentProcess().Id;
-			Uri.TryCreate($"tcp://{Remote.EndpointManagerPid.Address}", UriKind.Absolute, out Uri uri);
-			string host = uri.Host;
-			int port = uri.Port;
 			string[] kinds = Remote.GetKnownKinds();
 			Alive alive = new Alive
 			{
 				Kinds = { kinds },
 				MemberId = memberId,
-				Host = host,
-				Port = port
+				AlivePID = isAlivePid
 			};
-			foreach (PID serverPiD in _serverPids)
+			foreach (PID serverPiD in _serverPids.AddToEnd(isAlivePid))
 			{
 				serverPiD.Tell(alive);
 			}
