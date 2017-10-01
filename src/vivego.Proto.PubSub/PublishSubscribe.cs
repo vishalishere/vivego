@@ -43,7 +43,7 @@ namespace vivego.Proto.PubSub
 		{
 			Cluster.Start(clusterName, address, port, clusterProvider);
 			PubSubRouterActor routerActor = new PubSubRouterActor(loggerFactory);
-			return new PublishSubscribe(routerActor.Pid, serializer);
+			return new PublishSubscribe(routerActor.PubSubRouterActorPid, serializer);
 		}
 
 		protected override void Cleanup()

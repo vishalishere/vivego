@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -27,14 +28,14 @@ namespace vivego.Proto.PubSub
 		{
 			_logger = loggerFactory.CreateLogger<PubSubRouterActor>();
 
-			Pid = Actor.SpawnNamed(Actor.FromFunc(ReceiveAsync), typeof(PubSubRouterActor).FullName);
+			PubSubRouterActorPid = Actor.SpawnNamed(Actor.FromFunc(ReceiveAsync), typeof(PubSubRouterActor).FullName);
 			_topologySubscription = Actor.EventStream.Subscribe<ClusterTopologyEvent>(clusterTopologyEvent =>
 			{
-				Pid.Tell(clusterTopologyEvent);
+				PubSubRouterActorPid.Tell(clusterTopologyEvent);
 			});
 		}
 
-		public PID Pid { get; }
+		public PID PubSubRouterActorPid { get; }
 
 		private static string MakeCacheKey(string topic, string group)
 		{
@@ -119,8 +120,7 @@ namespace vivego.Proto.PubSub
 
 					if (!subscriptions.Subscriptions.TryGetValue(subscription.PID, out SubscriptionInfo subscriptionInfo))
 					{
-						_logger.LogDebug("Added subscription from: '{0}', with topic '{1}' and group: '{2}'", subscription.PID,
-							subscription.Topic, subscription.Group);
+						_logger.LogDebug("Added subscription from: '{0}', with topic '{1}' and group: '{2}'", subscription.PID, subscription.Topic, subscription.Group);
 						subscriptionInfo = new SubscriptionInfo(subscription);
 						subscriptions.Subscriptions.Add(subscription.PID, subscriptionInfo);
 						context.Watch(subscription.PID);
@@ -135,6 +135,7 @@ namespace vivego.Proto.PubSub
 				}
 				case Terminated terminated:
 				{
+					Console.Out.WriteLine("Terminated " + terminated.Who);
 					foreach (KeyValuePair<string, (Counter Counter, Dictionary<PID, SubscriptionInfo> Subscriptions)> pair in
 						_subscriptions.ToArray())
 					{
@@ -142,8 +143,8 @@ namespace vivego.Proto.PubSub
 						{
 							_lookupCache.Clear();
 							pair.Value.Subscriptions.Remove(terminated.Who);
-							_logger.LogDebug("Removed subscription from: '{0}', with topic '{1}' and group: '{2}'",
-								subscriptionInfo.Subscription.PID, subscriptionInfo.Subscription.Topic, subscriptionInfo.Subscription.Group);
+
+							_logger.LogDebug("Removed subscription from: '{0}', with topic '{1}' and group: '{2}'", subscriptionInfo.Subscription.PID, subscriptionInfo.Subscription.Topic, subscriptionInfo.Subscription.Group);
 							if (pair.Value.Subscriptions.Count == 0)
 							{
 								_subscriptions.Remove(pair.Key);
