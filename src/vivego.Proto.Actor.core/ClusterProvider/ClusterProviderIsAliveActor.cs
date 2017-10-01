@@ -31,7 +31,7 @@ namespace vivego.Proto.ClusterProvider
 						PID pid = new PID($"{alive.Host}:{alive.Port}", typeof(ClusterProviderIsAliveActor).FullName);
 						context.Watch(pid);
 
-						// Tell everybody else
+						// Tell everybody about the change
 						foreach (KeyValuePair<string, Alive> keyValuePair in _watchList)
 						{
 							pid.Tell(keyValuePair.Value);

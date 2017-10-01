@@ -20,7 +20,7 @@ namespace vivego.Proto.ClusterProvider
 {
 	public class SeededLocalClusterProvider : DisposableBase, IClusterProvider
 	{
-		private readonly TimeSpan _livenessPublishInterval;
+		private readonly PID _localClusterProviderIsAliveActor;
 		private PID[] _serverPids;
 		private readonly ISubject<IDictionary<string, Alive>> _clusterTopologyEventSubject = 
 			Subject.Synchronize(new Subject<IDictionary<string, Alive>>());
@@ -31,12 +31,9 @@ namespace vivego.Proto.ClusterProvider
 		}
 
 		public SeededLocalClusterProvider(
-			TimeSpan livenessPublishInterval,
 			params IPEndPoint[] seedsEndpoints)
 		{
-			_livenessPublishInterval = livenessPublishInterval;
-
-			Actor.SpawnNamed(Actor.FromProducer(() => new ClusterProviderIsAliveActor(_clusterTopologyEventSubject)),
+			_localClusterProviderIsAliveActor = Actor.SpawnNamed(Actor.FromProducer(() => new ClusterProviderIsAliveActor(_clusterTopologyEventSubject)),
 				typeof(ClusterProviderIsAliveActor).FullName);
 
 			_serverPids = seedsEndpoints
@@ -45,9 +42,10 @@ namespace vivego.Proto.ClusterProvider
 					PID pid = new PID(serverEndPoint.ToString(), typeof(ClusterProviderIsAliveActor).FullName);
 					return pid;
 				})
+				.AddToEnd(_localClusterProviderIsAliveActor)
 				.ToArray();
 		}
-		
+
 		public Task DeregisterMemberAsync()
 		{
 			return Task.CompletedTask;
@@ -84,32 +82,32 @@ namespace vivego.Proto.ClusterProvider
 							PID pid = new PID(serverEndPoint.Address, typeof(ClusterProviderIsAliveActor).FullName);
 							return pid;
 						})
+						.AddToEnd(_localClusterProviderIsAliveActor)
 						.ToArray();
 					Actor.EventStream.Publish(clusterTopologyEvent);
 				}, CancellationToken);
 
+			TellIsAlive();
+		}
+
+		private void TellIsAlive()
+		{
 			int memberId = Process.GetCurrentProcess().Id;
 			Uri.TryCreate($"tcp://{Remote.EndpointManagerPid.Address}", UriKind.Absolute, out Uri uri);
 			string host = uri.Host;
 			int port = uri.Port;
-			Observable
-				.Interval(_livenessPublishInterval)
-				.Merge(Observable.Return(0L)) // Trigger immidiately first time
-				.Subscribe(_ =>
-				{
-					string[] kinds = Remote.GetKnownKinds();
-					Alive alive = new Alive
-					{
-						Kinds = {kinds},
-						MemberId = memberId,
-						Host = host,
-						Port = port
-					};
-					foreach (PID serverPiD in _serverPids)
-					{
-						serverPiD.Tell(alive);
-					}
-				}, CancellationToken);
+			string[] kinds = Remote.GetKnownKinds();
+			Alive alive = new Alive
+			{
+				Kinds = { kinds },
+				MemberId = memberId,
+				Host = host,
+				Port = port
+			};
+			foreach (PID serverPiD in _serverPids)
+			{
+				serverPiD.Tell(alive);
+			}
 		}
 	}
 }
