@@ -15,7 +15,7 @@ Seed based Cluster Provider, no need to run consul</Description>
 		<PackageProjectUrl>https://github.com/esbencarlsen/vivego</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/esbencarlsen/vivego</RepositoryUrl>
 		<RepositoryType>Github</RepositoryType>
-		<Version>1.0.0.26</Version>
+		<Version>1.0.0.37-dev000002</Version>
 		<Product>vivego.Proto</Product>
 	</PropertyGroup>
 
@@ -30,9 +30,6 @@ Seed based Cluster Provider, no need to run consul</Description>
 		<ProjectReference Include="..\vivego.core\vivego.core.csproj" />
 	</ItemGroup>
 
-	<PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
-		<BumpLabel>dev</BumpLabel>
-	</PropertyGroup>
 	<PropertyGroup Condition=" '$(Configuration)'=='Release' ">
 		<BumpRevision>True</BumpRevision>
 		<BumpResetLabel>dev</BumpResetLabel>

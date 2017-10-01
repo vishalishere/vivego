@@ -14,7 +14,7 @@
 		<PackageProjectUrl>https://github.com/esbencarlsen/vivego</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/esbencarlsen/vivego</RepositoryUrl>
 		<RepositoryType>Github</RepositoryType>
-		<Version>1.0.0.26</Version>
+		<Version>1.0.0.32</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -32,9 +32,6 @@
 		<ProjectReference Include="..\vivego.Serializer.MessagePack\vivego.Serializer.MessagePack.csproj" />
 	</ItemGroup>
 
-	<PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
-		<BumpLabel>dev</BumpLabel>
-	</PropertyGroup>
 	<PropertyGroup Condition=" '$(Configuration)'=='Release' ">
 		<BumpRevision>True</BumpRevision>
 		<BumpResetLabel>dev</BumpResetLabel>

@@ -135,7 +135,6 @@ namespace vivego.Proto.PubSub
 				}
 				case Terminated terminated:
 				{
-					Console.Out.WriteLine("Terminated " + terminated.Who);
 					foreach (KeyValuePair<string, (Counter Counter, Dictionary<PID, SubscriptionInfo> Subscriptions)> pair in
 						_subscriptions.ToArray())
 					{

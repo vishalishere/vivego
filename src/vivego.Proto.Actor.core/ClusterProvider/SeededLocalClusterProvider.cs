@@ -81,10 +81,8 @@ namespace vivego.Proto.ClusterProvider
 							PID pid = new PID(serverEndPoint.Address, typeof(ClusterProviderIsAliveActor).FullName);
 							return pid;
 						})
-						//.AddToEnd(_localClusterProviderIsAliveActor)
 						.ToArray();
 					Actor.EventStream.Publish(clusterTopologyEvent);
-					Console.Out.WriteLine("Topology: " + string.Join(";", _serverPids.Select(x => x.ToString()).ToArray()));
 				}, CancellationToken);
 
 			Props props = Actor.FromProducer(() => new ClusterProviderIsAliveActor(_clusterTopologyEventSubject));

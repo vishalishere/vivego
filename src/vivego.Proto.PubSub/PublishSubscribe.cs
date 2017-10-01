@@ -34,14 +34,9 @@ namespace vivego.Proto.PubSub
 		}
 
 		public static PublishSubscribe StartCluster(
-			string clusterName,
-			string address,
-			int port,
-			IClusterProvider clusterProvider,
 			ISerializer<byte[]> serializer,
 			ILoggerFactory loggerFactory)
 		{
-			Cluster.Start(clusterName, address, port, clusterProvider);
 			PubSubRouterActor routerActor = new PubSubRouterActor(loggerFactory);
 			return new PublishSubscribe(routerActor.PubSubRouterActorPid, serializer);
 		}
@@ -62,14 +57,14 @@ namespace vivego.Proto.PubSub
 			});
 		}
 
-		public IObservable<T> Observe<T>(string topic, string group = null)
+		public IObservable<(string Topic, string Group, T Data)> Observe<T>(string topic, string group = null)
 		{
 			if (string.IsNullOrEmpty(topic))
 			{
 				throw new ArgumentNullException(nameof(topic));
 			}
 
-			return Observable.Create<T>(observer =>
+			return Observable.Create<(string Topic, string Group, T Data)>(observer =>
 			{
 				Props props = Actor.FromFunc(context =>
 				{
@@ -77,7 +72,7 @@ namespace vivego.Proto.PubSub
 					{
 						case Message message:
 							T deserialized = _serializer.Deserialize<T>(message.Data.ToByteArray());
-							observer.OnNext(deserialized);
+							observer.OnNext((message.Topic, message.Group, deserialized));
 							break;
 						case Stopped _:
 							observer.OnCompleted();

@@ -5,12 +5,14 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
 using Microsoft.Extensions.Logging;
 
+using Proto.Cluster;
+
 using vivego.core;
-using vivego.Discovery;
 using vivego.Discovery.Abstactions;
 using vivego.Discovery.DotNetty;
 using vivego.Proto.ClusterProvider;
@@ -78,19 +80,14 @@ namespace vivego.WampSharp.Proto.SubPub.Backplane
 		{
 			IPAddress ipAddress = GetMyIpAddress().First();
 			int serverPort = PortUtils.FindAvailablePort();
-			IPEndPoint[] endPoints = QueryEndPointsMulticast(realm.Name, ipAddress, serverPort);
+			IPEndPoint[] seedsEndpoints = QueryEndPointsMulticast(realm.Name, ipAddress, serverPort);
 			ILoggerFactory loggerFactory = new LoggerFactory().AddConsole(LogLevel.Debug);
 			loggerFactory
 				.CreateLogger("Auto")
-				.LogDebug("Discovered endpoints: {0}", string.Join(";", endPoints.Select(endPoint => endPoint.ToString())));
+				.LogDebug("Discovered endpoints: {0}", string.Join(";", seedsEndpoints.Select(endPoint => endPoint.ToString())));
 			ISerializer<byte[]> serializer = new MessagePackSerializer();
-			IPublishSubscribe pubSub = PublishSubscribe.StartCluster(realm.Name,
-				ipAddress.ToString(),
-				serverPort,
-				new SeededLocalClusterProvider(endPoints),
-				serializer,
-				loggerFactory
-			);
+			Cluster.Start(realm.Name, ipAddress.ToString(), serverPort, new SeededLocalClusterProvider(seedsEndpoints));
+			IPublishSubscribe pubSub = PublishSubscribe.StartCluster(serializer, loggerFactory);
 
 			return EnableDistributedBackplane(realm, pubSub);
 		}
@@ -105,6 +102,7 @@ namespace vivego.WampSharp.Proto.SubPub.Backplane
 				IDisposable wampSubscription = topicSubject.Subscribe(o => publishSubscribe.Publish(args.Topic.TopicUri, o));
 				IDisposable pubSubSubscription = publishSubscribe
 					.Observe<object>(args.Topic.TopicUri)
+					.Select(tuple => tuple.Data)
 					.Subscribe(topicSubject);
 				disposables.Add(wampSubscription);
 				disposables.Add(pubSubSubscription);

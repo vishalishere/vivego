@@ -7,6 +7,8 @@ using System.Net.Sockets;
 
 using Microsoft.Extensions.Logging;
 
+using Proto.Cluster;
+
 using vivego.core;
 using vivego.Discovery.Abstactions;
 using vivego.Discovery.DotNetty;
@@ -82,13 +84,9 @@ namespace ProtoBroker.Playground
 				.CreateLogger("Auto")
 				.LogDebug("Seed endpoints: {0}", string.Join(";", seedsEndpoints.Select(endPoint => endPoint.ToString())));
 			ISerializer<byte[]> serializer = new MessagePackSerializer();
-			IPublishSubscribe pubSub = PublishSubscribe.StartCluster(clusterId,
-				ipAddress.ToString(),
-				serverPort,
-				new SeededLocalClusterProvider(seedsEndpoints),
-				serializer,
-				loggerFactory
-			);
+
+			Cluster.Start(clusterId, ipAddress.ToString(), serverPort, new SeededLocalClusterProvider(seedsEndpoints));
+			IPublishSubscribe pubSub = PublishSubscribe.StartCluster(serializer, loggerFactory);
 
 			return pubSub;
 		}
