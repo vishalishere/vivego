@@ -7,7 +7,6 @@ using Google.Protobuf;
 using Microsoft.Extensions.Logging;
 
 using Proto;
-using Proto.Cluster;
 using Proto.Remote;
 
 using vivego.core;
@@ -16,7 +15,7 @@ using vivego.Serializer.Abstractions;
 
 namespace vivego.Proto.PubSub
 {
-	public class PublishSubscribe : DisposableBase, IPublishSubscribe
+	public class PublishSubscribe : IPublishSubscribe
 	{
 		private readonly PID _localRouter;
 		private readonly ISerializer<byte[]> _serializer;
@@ -26,24 +25,11 @@ namespace vivego.Proto.PubSub
 			Serialization.RegisterFileDescriptor(Messages.ProtosReflection.Descriptor);
 		}
 
-		private PublishSubscribe(PID localRouter,
-			ISerializer<byte[]> serializer)
-		{
-			_localRouter = localRouter;
-			_serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
-		}
-
-		public static PublishSubscribe StartCluster(
-			ISerializer<byte[]> serializer,
+		public PublishSubscribe(ISerializer<byte[]> serializer,
 			ILoggerFactory loggerFactory)
 		{
-			PubSubRouterActor routerActor = new PubSubRouterActor(loggerFactory);
-			return new PublishSubscribe(routerActor.PubSubRouterActorPid, serializer);
-		}
-
-		protected override void Cleanup()
-		{
-			Cluster.Shutdown();
+			_localRouter = new PubSubRouterActor(loggerFactory).PubSubRouterActorPid;
+			_serializer = serializer;
 		}
 
 		public void Publish<T>(string topic, T t, string group = null)

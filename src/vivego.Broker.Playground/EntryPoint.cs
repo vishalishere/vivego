@@ -86,7 +86,7 @@ namespace ProtoBroker.Playground
 			ISerializer<byte[]> serializer = new MessagePackSerializer();
 
 			Cluster.Start(clusterId, ipAddress.ToString(), serverPort, new SeededLocalClusterProvider(seedsEndpoints));
-			IPublishSubscribe pubSub = PublishSubscribe.StartCluster(serializer, loggerFactory);
+			IPublishSubscribe pubSub = new PublishSubscribe(serializer, loggerFactory);
 
 			return pubSub;
 		}
@@ -97,17 +97,14 @@ namespace ProtoBroker.Playground
 		public static void Main(string[] args)
 		{
 			IPublishSubscribe pubSub = PubSubAutoConfig.Auto("I am unique");
-			using (pubSub)
+			using (pubSub
+				.Observe<object>("*")
+				.Subscribe(_ => { Console.Out.WriteLine(_); }))
 			{
-				using (pubSub
-					.Observe<object>("*")
-					.Subscribe(_ => { Console.Out.WriteLine(_); }))
+				while (true)
 				{
-					while (true)
-					{
-						Console.ReadLine();
-						pubSub.Publish("a", "Hello");
-					}
+					Console.ReadLine();
+					pubSub.Publish("a", "Hello");
 				}
 			}
 		}

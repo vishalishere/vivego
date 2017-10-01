@@ -15,7 +15,7 @@
 		<PackageProjectUrl>https://github.com/esbencarlsen/vivego</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/esbencarlsen/vivego</RepositoryUrl>
 		<RepositoryType>Github</RepositoryType>
-		<Version>1.0.0.15-dev000001</Version>
+		<Version>1.0.0.16</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
