@@ -47,7 +47,9 @@ namespace vivego.Proto.PubSub
 			string cacheKey = MakeCacheKey(message.Topic, message.Group);
 			if (!_lookupCache.TryGetValue(cacheKey, out PID[] subscriptions))
 			{
-				subscriptions = subscriptionDictionary.Where(pair => pair.Value.Matches(message.Topic)).Select(pair => pair.Key)
+				subscriptions = subscriptionDictionary
+					.Where(pair => pair.Value.Matches(message.Topic))
+					.Select(pair => pair.Key)
 					.ToArray();
 				_lookupCache.Add(cacheKey, subscriptions);
 			}

@@ -7,6 +7,7 @@ using System.Net.Sockets;
 
 using Microsoft.Extensions.Logging;
 
+using Proto;
 using Proto.Cluster;
 
 using vivego.core;
@@ -74,12 +75,12 @@ namespace ProtoBroker.Playground
 		public static IPublishSubscribe Auto(string clusterId)
 		{
 			IPAddress ipAddress = GetMyIpAddress().First();
-			int serverPort = PortUtils.FindAvailablePortIncrementally(25000);
-			//IPEndPoint[] endPoints = QueryEndPointsMulticast(clusterId, ipAddress, serverPort);
+			int serverPort = PortUtils.FindAvailablePortIncrementally(35100);
 			IPEndPoint[] seedsEndpoints = {
-				new IPEndPoint(ipAddress, 25000)
+				new IPEndPoint(ipAddress, 35100)
 			};
-			ILoggerFactory loggerFactory = new LoggerFactory().AddConsole(LogLevel.Debug);
+
+			ILoggerFactory loggerFactory = new LoggerFactory().AddConsole(LogLevel.Warning);
 			loggerFactory
 				.CreateLogger("Auto")
 				.LogDebug("Seed endpoints: {0}", string.Join(";", seedsEndpoints.Select(endPoint => endPoint.ToString())));
@@ -96,6 +97,11 @@ namespace ProtoBroker.Playground
 	{
 		public static void Main(string[] args)
 		{
+			Actor.EventStream.Subscribe<ClusterTopologyEvent>(clusterTopologyEvent =>
+			{
+				Console.Out.WriteLine("Topology: " + string.Join(";", clusterTopologyEvent.Statuses.Select(memberStatus => memberStatus.Address)));
+			});
+
 			IPublishSubscribe pubSub = PubSubAutoConfig.Auto("I am unique");
 			using (pubSub
 				.Observe<object>("*")
@@ -104,7 +110,7 @@ namespace ProtoBroker.Playground
 				while (true)
 				{
 					Console.ReadLine();
-					pubSub.Publish("a", "Hello");
+					pubSub.Publish("00000000-0000-0000-0000-000000000000_AgentPresence_DictionaryGrainDictionary", "Hello");
 				}
 			}
 		}

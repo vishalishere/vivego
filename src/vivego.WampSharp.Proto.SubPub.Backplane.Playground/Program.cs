@@ -5,6 +5,8 @@ using System.Reactive.Subjects;
 using vivego.core;
 
 using WampSharp.V2;
+using WampSharp.V2.Core;
+using WampSharp.V2.Core.Contracts;
 using WampSharp.V2.Realm;
 
 namespace vivego.WampSharp.Proto.SubPub.Backplane.Playground
@@ -17,19 +19,31 @@ namespace vivego.WampSharp.Proto.SubPub.Backplane.Playground
 			string serverAddress = "ws://127.0.0.1:" + serverPort + "/ws";
 			WampHost host = new DefaultWampHost(serverAddress);
 			IWampHostedRealm realm = host.RealmContainer.GetRealmByName("vivego");
-			realm.EnableDistributedBackplane();
+			//realm.EnableDistributedBackplane();
 			host.Open();
+
+			realm.Services.GetSubject("wamp.subscription.on_subscribe")
+				.Subscribe(serialized =>
+				{
+					Console.Out.WriteLine("New Subscription");
+				});
 
 			DefaultWampChannelFactory channelFactory = new DefaultWampChannelFactory();
 			IWampChannel wampChannel = channelFactory.CreateJsonChannel(serverAddress, "vivego");
 			wampChannel.Open().Wait();
-			ISubject<string> subject = wampChannel.RealmProxy.Services.GetSubject<string>("com.vivego");
-			subject.Subscribe(s => { Console.Out.WriteLine("Client Received " + s); });
+			ISubject<object> subject = wampChannel.RealmProxy.Services.GetSubject<object>("vivego.accid.case.caseid");
 
+			subject.Subscribe(s => { Console.Out.WriteLine(s); });
 			while (true)
 			{
 				var input = Console.ReadLine();
-				subject.OnNext(input);
+				realm.TopicContainer.Publish(WampObjectFormatter.Value,
+					new PublishOptions
+					{
+						
+					},
+					"vivego",
+					new object[] { "Helo" });
 			}
 		}
 	}
