@@ -19,24 +19,31 @@ namespace vivego.Proto.ClusterProvider
 {
 	public class SeededLocalClusterProvider : DisposableBase, IClusterProvider
 	{
-		private PID[] _serverPids;
-		private readonly ISubject<Alive[]> _clusterTopologyEventSubject = 
+		private readonly TimeSpan _broadcastInterval;
+
+		private readonly ISubject<Alive[]> _clusterTopologyEventSubject =
 			Subject.Synchronize(new Subject<Alive[]>());
+
+		private readonly IPEndPoint[] _seedsEndpoints;
+		private PID[] _serverPids;
 
 		static SeededLocalClusterProvider()
 		{
 			Serialization.RegisterFileDescriptor(ProtosReflection.Descriptor);
 		}
 
-		public SeededLocalClusterProvider(
+		public SeededLocalClusterProvider(params IPEndPoint[] seedsEndpoints)
+			: this(TimeSpan.FromSeconds(60), seedsEndpoints)
+		{
+		}
+
+		public SeededLocalClusterProvider(TimeSpan broadcastInterval,
 			params IPEndPoint[] seedsEndpoints)
 		{
+			_broadcastInterval = broadcastInterval;
+			_seedsEndpoints = seedsEndpoints;
 			_serverPids = seedsEndpoints
-				.Select(serverEndPoint =>
-				{
-					PID pid = new PID(serverEndPoint.ToString(), typeof(ClusterProviderIsAliveActor).FullName);
-					return pid;
-				})
+				.Select(EndpointToPid)
 				.ToArray();
 		}
 
@@ -65,7 +72,7 @@ namespace vivego.Proto.ClusterProvider
 						.Where(a => !a.AlivePID.Address.Equals("nonhost"))
 						.Select(a =>
 						{
-							Uri.TryCreate($"tcp://{a.AlivePID.Address}", UriKind.Absolute, out var uri);
+							Uri.TryCreate($"tcp://{a.AlivePID.Address}", UriKind.Absolute, out Uri uri);
 							return new MemberStatus(a.MemberId, uri.Host, uri.Port, a.Kinds, true);
 						})
 						.ToArray());
@@ -91,14 +98,29 @@ namespace vivego.Proto.ClusterProvider
 			string[] kinds = Remote.GetKnownKinds();
 			Alive alive = new Alive
 			{
-				Kinds = { kinds },
+				Kinds = {kinds},
 				MemberId = memberId,
 				AlivePID = isAlivePid
 			};
-			foreach (PID serverPiD in _serverPids.AddToEnd(isAlivePid))
-			{
-				serverPiD.Tell(alive);
-			}
+			Observable
+				.Interval(_broadcastInterval)
+				.Merge(Observable.Return(0L))
+				.Subscribe(_ =>
+				{
+					foreach (PID serverPiD in _serverPids
+						.AddToEnd(_seedsEndpoints.Select(EndpointToPid))
+						.AddToEnd(isAlivePid)
+						.Distinct())
+					{
+						serverPiD.Tell(alive);
+					}
+				}, CancellationToken);
+		}
+
+		private static PID EndpointToPid(IPEndPoint ipEndPoint)
+		{
+			PID pid = new PID(ipEndPoint.ToString(), typeof(ClusterProviderIsAliveActor).FullName);
+			return pid;
 		}
 	}
 }

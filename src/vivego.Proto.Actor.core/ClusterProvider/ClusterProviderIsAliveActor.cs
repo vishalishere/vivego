@@ -53,7 +53,6 @@ namespace vivego.Proto.ClusterProvider
 					if (terminated.AddressTerminated
 						&& _watchList.Remove(terminated.Who))
 					{
-						_watchList.Remove(terminated.Who);
 						_observer.OnNext(_watchList.Select(pair => pair.Value).ToArray());
 					}
 
