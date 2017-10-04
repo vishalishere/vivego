@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,10 +28,11 @@ namespace vivego.Proto.PubSub
 			_logger = loggerFactory.CreateLogger<PubSubRouterActor>();
 
 			PubSubRouterActorPid = Actor.SpawnNamed(Actor.FromFunc(ReceiveAsync), typeof(PubSubRouterActor).FullName);
-			_topologySubscription = Actor.EventStream.Subscribe<ClusterTopologyEvent>(clusterTopologyEvent =>
-			{
-				PubSubRouterActorPid.Tell(clusterTopologyEvent);
-			});
+			_topologySubscription = Actor.EventStream
+				.Subscribe<ClusterTopologyEvent>(clusterTopologyEvent =>
+				{
+					PubSubRouterActorPid.Tell(clusterTopologyEvent);
+				});
 		}
 
 		public PID PubSubRouterActorPid { get; }

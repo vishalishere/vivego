@@ -14,6 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionIt
 		global.json = global.json
 		NuGet.Config = NuGet.Config
 		Readme.md = Readme.md
+		Version.txt = Version.txt
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.core", "src\vivego.core\vivego.core.csproj", "{C855B22A-9239-4BFA-88BA-392830B7A213}"
