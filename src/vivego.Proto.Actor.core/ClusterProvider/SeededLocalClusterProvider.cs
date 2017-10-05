@@ -19,32 +19,19 @@ namespace vivego.Proto.ClusterProvider
 {
 	public class SeededLocalClusterProvider : DisposableBase, IClusterProvider
 	{
-		private readonly TimeSpan _broadcastInterval;
+		private readonly IObservable<IPEndPoint[]> _seedsEndpointObservable;
 
-		private readonly ISubject<Alive[]> _clusterTopologyEventSubject =
-			Subject.Synchronize(new Subject<Alive[]>());
-
-		private readonly IPEndPoint[] _seedsEndpoints;
-		private PID[] _serverPids;
+		private readonly ISubject<(Node Node, bool Alive)[]> _clusterTopologyEventSubject =
+			Subject.Synchronize(new Subject<(Node Node, bool Alive)[]>());
 
 		static SeededLocalClusterProvider()
 		{
 			Serialization.RegisterFileDescriptor(ProtosReflection.Descriptor);
 		}
 
-		public SeededLocalClusterProvider(params IPEndPoint[] seedsEndpoints)
-			: this(TimeSpan.FromSeconds(60), seedsEndpoints)
+		public SeededLocalClusterProvider(IObservable<IPEndPoint[]> seedsEndpointObservable)
 		{
-		}
-
-		public SeededLocalClusterProvider(TimeSpan broadcastInterval,
-			params IPEndPoint[] seedsEndpoints)
-		{
-			_broadcastInterval = broadcastInterval;
-			_seedsEndpoints = seedsEndpoints;
-			_serverPids = seedsEndpoints
-				.Select(EndpointToPid)
-				.ToArray();
+			_seedsEndpointObservable = seedsEndpointObservable;
 		}
 
 		public Task DeregisterMemberAsync()
@@ -66,53 +53,40 @@ namespace vivego.Proto.ClusterProvider
 		public void MonitorMemberStatusChanges()
 		{
 			_clusterTopologyEventSubject
-				.Select(alives =>
+				.Select(tuples =>
 				{
-					ClusterTopologyEvent newTopology = new ClusterTopologyEvent(alives
-						.Where(a => !a.AlivePID.Address.Equals("nonhost"))
-						.Select(a =>
+					ClusterTopologyEvent newTopology = new ClusterTopologyEvent(tuples
+						.Where(tuple => !tuple.Node.PID.Address.Equals("nonhost"))
+						.Select(tuple =>
 						{
-							Uri.TryCreate($"tcp://{a.AlivePID.Address}", UriKind.Absolute, out Uri uri);
-							return new MemberStatus(a.MemberId, uri.Host, uri.Port, a.Kinds, true);
+							Uri.TryCreate($"tcp://{tuple.Node.PID.Address}", UriKind.Absolute, out Uri uri);
+							return new MemberStatus(tuple.Node.MemberId, uri.Host, uri.Port, tuple.Node.Kinds, tuple.Alive);
 						})
 						.ToArray());
 					return newTopology;
 				})
 				.DistinctUntilChanged(new ClusterTopologyEventEqualityComparer())
-				.Subscribe(clusterTopologyEvent =>
-				{
-					_serverPids = clusterTopologyEvent
-						.Statuses
-						.Select(serverEndPoint =>
-						{
-							PID pid = new PID(serverEndPoint.Address, typeof(ClusterProviderIsAliveActor).FullName);
-							return pid;
-						})
-						.ToArray();
-					Actor.EventStream.Publish(clusterTopologyEvent);
-				}, CancellationToken);
+				.Subscribe(clusterTopologyEvent => Actor.EventStream.Publish(clusterTopologyEvent), CancellationToken);
 
 			Props props = Actor.FromProducer(() => new ClusterProviderIsAliveActor(_clusterTopologyEventSubject));
 			PID isAlivePid = Actor.SpawnNamed(props, typeof(ClusterProviderIsAliveActor).FullName);
 			int memberId = Process.GetCurrentProcess().Id;
 			string[] kinds = Remote.GetKnownKinds();
-			Alive alive = new Alive
+			Node node = new Node
 			{
 				Kinds = {kinds},
 				MemberId = memberId,
-				AlivePID = isAlivePid
+				PID = isAlivePid
 			};
-			Observable
-				.Interval(_broadcastInterval)
-				.Merge(Observable.Return(0L))
-				.Subscribe(_ =>
+
+			_seedsEndpointObservable
+				.Subscribe(seedEndpoints =>
 				{
-					foreach (PID serverPiD in _serverPids
-						.AddToEnd(_seedsEndpoints.Select(EndpointToPid))
-						.AddToEnd(isAlivePid)
-						.Distinct())
+					isAlivePid.Tell(node);
+					foreach (IPEndPoint seedEndpoint in seedEndpoints)
 					{
-						serverPiD.Tell(alive);
+						PID pid = EndpointToPid(seedEndpoint);
+						pid.Tell(node);
 					}
 				}, CancellationToken);
 		}

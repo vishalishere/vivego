@@ -4,11 +4,13 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Reactive.Linq;
 
 using Microsoft.Extensions.Logging;
 
 using Proto;
 using Proto.Cluster;
+using Proto.Cluster.Consul;
 
 using vivego.core;
 using vivego.Discovery.Abstactions;
@@ -77,17 +79,28 @@ namespace ProtoBroker.Playground
 			IPAddress ipAddress = GetMyIpAddress().First();
 			int serverPort = PortUtils.FindAvailablePortIncrementally(35100);
 			IPEndPoint[] seedsEndpoints = {
-				new IPEndPoint(ipAddress, 35100)
+				new IPEndPoint(ipAddress, 35100),
+				//new IPEndPoint(ipAddress, 35101),
+				//new IPEndPoint(ipAddress, 35102),
+				//new IPEndPoint(ipAddress, 35103)
 			};
 
 			ILoggerFactory loggerFactory = new LoggerFactory().AddConsole(LogLevel.Warning);
-			loggerFactory
-				.CreateLogger("Auto")
-				.LogDebug("Seed endpoints: {0}", string.Join(";", seedsEndpoints.Select(endPoint => endPoint.ToString())));
-			ISerializer<byte[]> serializer = new MessagePackSerializer();
+			//loggerFactory
+			//	.CreateLogger("Auto")
+			//	.LogDebug("Seed endpoints: {0}", string.Join(";", seedsEndpoints.Select(endPoint => endPoint.ToString())));
 
-			Cluster.Start(clusterId, ipAddress.ToString(), serverPort, new SeededLocalClusterProvider(seedsEndpoints));
+			ISerializer<byte[]> serializer = new MessagePackSerializer();
 			IPublishSubscribe pubSub = new PublishSubscribe(serializer, loggerFactory);
+
+			Cluster.Start(clusterId, ipAddress.ToString(), serverPort, new SeededLocalClusterProvider(Observable.Return(seedsEndpoints)));
+			//Cluster.Start(clusterId, ipAddress.ToString(), serverPort, new ConsulProvider(new ConsulProviderOptions
+			//{
+			//	ServiceTtl = TimeSpan.FromSeconds(5),
+			//	DeregisterCritical = TimeSpan.FromSeconds(5),
+			//	RefreshTtl = TimeSpan.FromSeconds(1),
+			//	BlockingWaitTime = TimeSpan.FromSeconds(20)
+			//}, c => c.Address = new Uri("http://vngagetest44:8500")));
 
 			return pubSub;
 		}
@@ -99,10 +112,11 @@ namespace ProtoBroker.Playground
 		{
 			Actor.EventStream.Subscribe<ClusterTopologyEvent>(clusterTopologyEvent =>
 			{
-				Console.Out.WriteLine("Topology: " + string.Join(";", clusterTopologyEvent.Statuses.Select(memberStatus => memberStatus.Address)));
+				Console.Out.WriteLine("Topology: " + string.Join(";", clusterTopologyEvent.Statuses.Select(memberStatus => $"{memberStatus.Address}-{memberStatus.Alive}")));
+				Console.Out.WriteLine("");
 			});
 
-			IPublishSubscribe pubSub = PubSubAutoConfig.Auto("I am unique");
+			IPublishSubscribe pubSub = PubSubAutoConfig.Auto("unique");
 			using (pubSub
 				.Observe<object>("*")
 				.Subscribe(_ => { Console.Out.WriteLine(_); }))

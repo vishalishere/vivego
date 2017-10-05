@@ -6,8 +6,8 @@ import "Reference/Protos.proto";
 
 package vivego.Proto;
 
-message Alive {
-	actor.PID AlivePID = 1;
+message Node {
+	actor.PID PID = 1;
 	int32 MemberId = 2;
 	repeated string Kinds = 3;
 }

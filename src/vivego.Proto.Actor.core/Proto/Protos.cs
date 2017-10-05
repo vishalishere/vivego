@@ -23,23 +23,23 @@ namespace vivego.Proto.Messages {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "CgxQcm90b3MucHJvdG8SDHZpdmVnby5Qcm90bxoWUmVmZXJlbmNlL1Byb3Rv",
-            "cy5wcm90byJGCgVBbGl2ZRIcCghBbGl2ZVBJRBgBIAEoCzIKLmFjdG9yLlBJ",
-            "RBIQCghNZW1iZXJJZBgCIAEoBRINCgVLaW5kcxgDIAMoCUIYqgIVdml2ZWdv",
-            "LlByb3RvLk1lc3NhZ2VzYgZwcm90bzM="));
+            "cy5wcm90byJACgROb2RlEhcKA1BJRBgBIAEoCzIKLmFjdG9yLlBJRBIQCghN",
+            "ZW1iZXJJZBgCIAEoBRINCgVLaW5kcxgDIAMoCUIYqgIVdml2ZWdvLlByb3Rv",
+            "Lk1lc3NhZ2VzYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Proto.ProtosReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::vivego.Proto.Messages.Alive), global::vivego.Proto.Messages.Alive.Parser, new[]{ "AlivePID", "MemberId", "Kinds" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::vivego.Proto.Messages.Node), global::vivego.Proto.Messages.Node.Parser, new[]{ "PID", "MemberId", "Kinds" }, null, null, null)
           }));
     }
     #endregion
 
   }
   #region Messages
-  public sealed partial class Alive : pb::IMessage<Alive> {
-    private static readonly pb::MessageParser<Alive> _parser = new pb::MessageParser<Alive>(() => new Alive());
+  public sealed partial class Node : pb::IMessage<Node> {
+    private static readonly pb::MessageParser<Node> _parser = new pb::MessageParser<Node>(() => new Node());
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<Alive> Parser { get { return _parser; } }
+    public static pb::MessageParser<Node> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
@@ -52,32 +52,32 @@ namespace vivego.Proto.Messages {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public Alive() {
+    public Node() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public Alive(Alive other) : this() {
-      AlivePID = other.alivePID_ != null ? other.AlivePID.Clone() : null;
+    public Node(Node other) : this() {
+      PID = other.pID_ != null ? other.PID.Clone() : null;
       memberId_ = other.memberId_;
       kinds_ = other.kinds_.Clone();
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public Alive Clone() {
-      return new Alive(this);
+    public Node Clone() {
+      return new Node(this);
     }
 
-    /// <summary>Field number for the "AlivePID" field.</summary>
-    public const int AlivePIDFieldNumber = 1;
-    private global::Proto.PID alivePID_;
+    /// <summary>Field number for the "PID" field.</summary>
+    public const int PIDFieldNumber = 1;
+    private global::Proto.PID pID_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public global::Proto.PID AlivePID {
-      get { return alivePID_; }
+    public global::Proto.PID PID {
+      get { return pID_; }
       set {
-        alivePID_ = value;
+        pID_ = value;
       }
     }
 
@@ -104,18 +104,18 @@ namespace vivego.Proto.Messages {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
-      return Equals(other as Alive);
+      return Equals(other as Node);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(Alive other) {
+    public bool Equals(Node other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (!object.Equals(AlivePID, other.AlivePID)) return false;
+      if (!object.Equals(PID, other.PID)) return false;
       if (MemberId != other.MemberId) return false;
       if(!kinds_.Equals(other.kinds_)) return false;
       return true;
@@ -124,7 +124,7 @@ namespace vivego.Proto.Messages {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (alivePID_ != null) hash ^= AlivePID.GetHashCode();
+      if (pID_ != null) hash ^= PID.GetHashCode();
       if (MemberId != 0) hash ^= MemberId.GetHashCode();
       hash ^= kinds_.GetHashCode();
       return hash;
@@ -137,9 +137,9 @@ namespace vivego.Proto.Messages {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (alivePID_ != null) {
+      if (pID_ != null) {
         output.WriteRawTag(10);
-        output.WriteMessage(AlivePID);
+        output.WriteMessage(PID);
       }
       if (MemberId != 0) {
         output.WriteRawTag(16);
@@ -151,8 +151,8 @@ namespace vivego.Proto.Messages {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (alivePID_ != null) {
-        size += 1 + pb::CodedOutputStream.ComputeMessageSize(AlivePID);
+      if (pID_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(PID);
       }
       if (MemberId != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(MemberId);
@@ -162,15 +162,15 @@ namespace vivego.Proto.Messages {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(Alive other) {
+    public void MergeFrom(Node other) {
       if (other == null) {
         return;
       }
-      if (other.alivePID_ != null) {
-        if (alivePID_ == null) {
-          alivePID_ = new global::Proto.PID();
+      if (other.pID_ != null) {
+        if (pID_ == null) {
+          pID_ = new global::Proto.PID();
         }
-        AlivePID.MergeFrom(other.AlivePID);
+        PID.MergeFrom(other.PID);
       }
       if (other.MemberId != 0) {
         MemberId = other.MemberId;
@@ -187,10 +187,10 @@ namespace vivego.Proto.Messages {
             input.SkipLastField();
             break;
           case 10: {
-            if (alivePID_ == null) {
-              alivePID_ = new global::Proto.PID();
+            if (pID_ == null) {
+              pID_ = new global::Proto.PID();
             }
-            input.ReadMessage(alivePID_);
+            input.ReadMessage(pID_);
             break;
           }
           case 16: {
