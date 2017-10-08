@@ -15,7 +15,6 @@ namespace vivego.EventLoopScheduler.StressTest
 		{
 			Console.Out.WriteLine("ThreadCount Before EventLoopSchedulerAllocation: " + Process.GetCurrentProcess().Threads.Count);
 			long counter;
-			int numberOfItrations;
 			Stopwatch sw;
 			using (System.Reactive.Concurrency.EventLoopScheduler scheduler = new System.Reactive.Concurrency.EventLoopScheduler())
 			{
@@ -25,7 +24,7 @@ namespace vivego.EventLoopScheduler.StressTest
 				Console.Out.WriteLine("ThreadCount After Warmup: " + Process.GetCurrentProcess().Threads.Count);
 
 				counter = 0;
-				numberOfItrations = 1000000;
+				int numberOfItrations = 1000000;
 				sw = Stopwatch.StartNew();
 				foreach (int i in Enumerable.Range(0, numberOfItrations))
 				{

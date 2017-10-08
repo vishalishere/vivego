@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Reactive.Linq;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 using Proto;
 using Proto.Cluster;
 using Proto.Remote;
+using Proto.Router;
 
 using vivego.core;
 using vivego.Proto.Messages;
@@ -80,15 +82,21 @@ namespace vivego.Proto.ClusterProvider
 			};
 
 			_seedsEndpointObservable
-				.Subscribe(seedEndpoints =>
+				.Select(seedEndpoints =>
 				{
-					isAlivePid.Tell(node);
-					foreach (IPEndPoint seedEndpoint in seedEndpoints)
-					{
-						PID pid = EndpointToPid(seedEndpoint);
-						pid.Tell(node);
-					}
-				}, CancellationToken);
+					IEnumerable<PID> seedPids = seedEndpoints.Select(EndpointToPid).AddToEnd(isAlivePid);
+					Props broadcastProps = Router.NewBroadcastGroup(seedPids.ToArray());
+					return Actor.Spawn(broadcastProps);
+				})
+				.Scan((PID) null, (previous, @new) =>
+				{
+					previous?.Stop();
+					return @new;
+				})
+				.Subscribe(broadcastPid =>
+				{
+					broadcastPid.Tell(node);
+				});
 		}
 
 		private static PID EndpointToPid(IPEndPoint ipEndPoint)
