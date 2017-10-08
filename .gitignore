@@ -261,3 +261,4 @@ __pycache__/
 *.pyc
 /lib
 /test/vivego.EventLoopScheduler.StressTest/BenchmarkDotNet.Artifacts/results
+/vivego.SerializerTests/BenchmarkDotNet.Artifacts/results

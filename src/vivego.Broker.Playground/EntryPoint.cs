@@ -5,12 +5,13 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
 using Proto;
 using Proto.Cluster;
-using Proto.Cluster.Consul;
+using Proto.Remote;
 
 using vivego.core;
 using vivego.Discovery.Abstactions;
@@ -82,7 +83,7 @@ namespace ProtoBroker.Playground
 				new IPEndPoint(ipAddress, 35100),
 				//new IPEndPoint(ipAddress, 35101),
 				//new IPEndPoint(ipAddress, 35102),
-				//new IPEndPoint(ipAddress, 35103)
+				//new IPEndPoint(ipAddress, 35103)B
 			};
 
 			ILoggerFactory loggerFactory = new LoggerFactory().AddConsole(LogLevel.Warning);
@@ -92,7 +93,7 @@ namespace ProtoBroker.Playground
 
 			ISerializer<byte[]> serializer = new MessagePackSerializer();
 			IPublishSubscribe pubSub = new PublishSubscribe(serializer, loggerFactory);
-
+			Remote.RegisterKnownKind("DistributedCacheActor", Actor.FromProducer(() => new CacheActor()));
 			Cluster.Start(clusterId, ipAddress.ToString(), serverPort, new SeededLocalClusterProvider(Observable.Return(seedsEndpoints)));
 			//Cluster.Start(clusterId, ipAddress.ToString(), serverPort, new ConsulProvider(new ConsulProviderOptions
 			//{
@@ -106,9 +107,31 @@ namespace ProtoBroker.Playground
 		}
 	}
 
+	public class CacheActor : IActor
+	{
+		public static long InstanceCount=0;
+
+		public CacheActor()
+		{
+			Console.Out.WriteLine("Instance Count " + InstanceCount++);
+		}
+
+		public Task ReceiveAsync(IContext context)
+		{
+			switch (context.Message)
+			{
+				case string s:
+					Console.Out.WriteLine("Cache Entry Updated with " + s);
+					break;
+			}
+
+			return Task.CompletedTask;
+		}
+	}
+
 	public class EntryPoint
 	{
-		public static void Main(string[] args)
+		public static async Task Main(string[] args)
 		{
 			Actor.EventStream.Subscribe<ClusterTopologyEvent>(clusterTopologyEvent =>
 			{
@@ -117,14 +140,20 @@ namespace ProtoBroker.Playground
 			});
 
 			IPublishSubscribe pubSub = PubSubAutoConfig.Auto("unique");
+
 			using (pubSub
-				.Observe<object>("*")
+				.Observe<string>("cacheInvalidated")
 				.Subscribe(_ => { Console.Out.WriteLine(_); }))
 			{
 				while (true)
 				{
-					Console.ReadLine();
-					pubSub.Publish("00000000-0000-0000-0000-000000000000_AgentPresence_DictionaryGrainDictionary", "Hello");
+					string cackeKey = Console.ReadLine();
+					//pubSub.Publish("00000000-0000-0000-0000-000000000000_AgentPresence_DictionaryGrainDictionary", "Hello");
+					var actor = await Cluster.GetAsync(Guid.NewGuid().ToString(), "DistributedCacheActor");
+					if (actor.Item2 == ResponseStatusCode.OK)
+					{
+						actor.Item1.Tell(cackeKey);
+					}
 				}
 			}
 		}
