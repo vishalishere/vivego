@@ -15,7 +15,13 @@ namespace vivego.Proto.PubSub
 		/// </summary>
 		public SubscriptionInfo(Subscription subscription)
 		{
-			Subscription = subscription;
+			Subscription = subscription ?? throw new ArgumentNullException(nameof(subscription));
+
+			if (string.IsNullOrEmpty(subscription.Topic))
+			{
+				throw new ArgumentException("Value cannot be null or empty.", nameof(subscription.Topic));
+			}
+
 			int wildCardPos = subscription.Topic.IndexOf(WildCardChar);
 			int fullWildCardPos = subscription.Topic.IndexOf(FullWildCardChar);
 
