@@ -142,18 +142,13 @@ namespace ProtoBroker.Playground
 			IPublishSubscribe pubSub = PubSubAutoConfig.Auto("unique");
 
 			using (pubSub
-				.Observe<string>("cacheInvalidated")
+				.Observe<string>("*")
 				.Subscribe(_ => { Console.Out.WriteLine(_); }))
 			{
 				while (true)
 				{
-					string cackeKey = Console.ReadLine();
-					//pubSub.Publish("00000000-0000-0000-0000-000000000000_AgentPresence_DictionaryGrainDictionary", "Hello");
-					var actor = await Cluster.GetAsync(Guid.NewGuid().ToString(), "DistributedCacheActor");
-					if (actor.Item2 == ResponseStatusCode.OK)
-					{
-						actor.Item1.Tell(cackeKey);
-					}
+					Console.ReadLine();
+					pubSub.Publish("00000000-0000-0000-0000-000000000000_AgentPresence_DictionaryGrainDictionary", "Hello");
 				}
 			}
 		}

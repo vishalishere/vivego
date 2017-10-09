@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.16
+VisualStudioVersion = 15.0.27004.2002
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.Discovery.Abstactions", "src\vivego.Discovery\vivego.Discovery.Abstactions.csproj", "{8898E2F4-047B-401A-933F-F3954CAC6904}"
 EndProject
@@ -41,9 +41,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.WampSharp.Proto.SubP
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.WampSharp.Proto.SubPub.Backplane.Playground", "src\vivego.WampSharp.Proto.SubPub.Backplane.Playground\vivego.WampSharp.Proto.SubPub.Backplane.Playground.csproj", "{B5C0871D-BEF1-4749-BD9C-F37AEFBEF85B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vivego.Serializer.Wire", "src\vivego.Serializer.Wire\vivego.Serializer.Wire.csproj", "{AD6D65B1-665E-4196-B218-7635EB2D0C48}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.Serializer.Wire", "src\vivego.Serializer.Wire\vivego.Serializer.Wire.csproj", "{AD6D65B1-665E-4196-B218-7635EB2D0C48}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vivego.SerializerTests", "vivego.SerializerTests\vivego.SerializerTests.csproj", "{8CE43019-6F42-4AE3-B7DA-ABA2EF89B355}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.SerializerTests", "vivego.SerializerTests\vivego.SerializerTests.csproj", "{8CE43019-6F42-4AE3-B7DA-ABA2EF89B355}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vivego.Orleans.Providers", "src\vivego.Orleans.Providers\vivego.Orleans.Providers.csproj", "{2AFF40DC-40EA-4035-A88F-D5C6B68FAD28}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -107,6 +109,10 @@ Global
 		{8CE43019-6F42-4AE3-B7DA-ABA2EF89B355}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8CE43019-6F42-4AE3-B7DA-ABA2EF89B355}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8CE43019-6F42-4AE3-B7DA-ABA2EF89B355}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2AFF40DC-40EA-4035-A88F-D5C6B68FAD28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2AFF40DC-40EA-4035-A88F-D5C6B68FAD28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2AFF40DC-40EA-4035-A88F-D5C6B68FAD28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2AFF40DC-40EA-4035-A88F-D5C6B68FAD28}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
