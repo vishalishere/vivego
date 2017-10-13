@@ -26,16 +26,19 @@ namespace vivego.Proto.PubSub
 			Serialization.RegisterFileDescriptor(Messages.ProtosReflection.Descriptor);
 		}
 
-		public PublishSubscribe(ISerializer<byte[]> serializer,
-			ILoggerFactory loggerFactory) : this(serializer, loggerFactory, subscription => new DefaultTopicFilter(subscription))
+		public PublishSubscribe(string clusterName,
+			ISerializer<byte[]> serializer,
+			ILoggerFactory loggerFactory) : this(clusterName, serializer, loggerFactory, subscription => new DefaultTopicFilter(subscription))
 		{
 		}
 
-		public PublishSubscribe(ISerializer<byte[]> serializer,
+		public PublishSubscribe(
+			string clusterName,
+			ISerializer<byte[]> serializer,
 			ILoggerFactory loggerFactory,
 			Func<Subscription, ITopicFilter> topicFilterFactory)
 		{
-			_localRouter = new PublishSubscribeRouterActor(loggerFactory, topicFilterFactory).PubSubRouterActorPid;
+			_localRouter = new PublishSubscribeRouterActor(clusterName, loggerFactory, topicFilterFactory).PubSubRouterActorPid;
 			_serializer = serializer;
 		}
 

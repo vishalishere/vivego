@@ -25,8 +25,11 @@ namespace vivego.Proto.PubSub
 
 		private readonly Subscription<object> _topologySubscription;
 		private PID[] _pubSubRouters = new PID[0];
+		private readonly string _publishSubscribeRouterActorName;
 
-		public PublishSubscribeRouterActor(ILoggerFactory loggerFactory,
+		public PublishSubscribeRouterActor(
+			string clusterName,
+			ILoggerFactory loggerFactory,
 			Func<Subscription, ITopicFilter> topicFilterFactory)
 		{
 			if (loggerFactory == null)
@@ -37,8 +40,8 @@ namespace vivego.Proto.PubSub
 			_topicFilterFactory = topicFilterFactory ?? throw new ArgumentNullException(nameof(topicFilterFactory));
 
 			_logger = loggerFactory.CreateLogger<PublishSubscribeRouterActor>();
-
-			PubSubRouterActorPid = Actor.SpawnNamed(Actor.FromFunc(ReceiveAsync), typeof(PublishSubscribeRouterActor).FullName);
+			_publishSubscribeRouterActorName = $"{clusterName}_{typeof(PublishSubscribeRouterActor).FullName}";
+			PubSubRouterActorPid = Actor.SpawnNamed(Actor.FromFunc(ReceiveAsync), _publishSubscribeRouterActorName);
 			_topologySubscription = Actor.EventStream
 				.Subscribe<ClusterTopologyEvent>(clusterTopologyEvent =>
 				{
@@ -78,7 +81,7 @@ namespace vivego.Proto.PubSub
 						.Where(memberStatus => memberStatus.Alive)
 						.Select(memberStatus =>
 						{
-							PID routerPid = new PID(memberStatus.Address, typeof(PublishSubscribeRouterActor).FullName);
+							PID routerPid = new PID(memberStatus.Address, _publishSubscribeRouterActorName);
 							return routerPid;
 						})
 						.ToArray();

@@ -9,9 +9,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
-using Proto;
 using Proto.Cluster;
-using Proto.Remote;
 
 using vivego.core;
 using vivego.Discovery.Abstactions;
@@ -75,6 +73,7 @@ namespace ProtoBroker.Playground
 			return endPoints;
 		}
 
+		private static bool clusterIsStarted = false;
 		public static IPublishSubscribe Auto(string clusterId)
 		{
 			IPAddress ipAddress = GetMyIpAddress().First();
@@ -92,9 +91,13 @@ namespace ProtoBroker.Playground
 			//	.LogDebug("Seed endpoints: {0}", string.Join(";", seedsEndpoints.Select(endPoint => endPoint.ToString())));
 
 			ISerializer<byte[]> serializer = new MessagePackSerializer();
-			IPublishSubscribe pubSub = new PublishSubscribe(serializer, loggerFactory);
-			Remote.RegisterKnownKind("DistributedCacheActor", Actor.FromProducer(() => new CacheActor()));
-			Cluster.Start(clusterId, ipAddress.ToString(), serverPort, new SeededLocalClusterProvider(Observable.Return(seedsEndpoints)));
+			IPublishSubscribe pubSub = new PublishSubscribe(clusterId, serializer, loggerFactory);
+
+			if (!clusterIsStarted)
+			{
+				clusterIsStarted = true;
+				Cluster.Start(clusterId, ipAddress.ToString(), serverPort, new SeededLocalClusterProvider(Observable.Return(seedsEndpoints)));
+			}
 			//Cluster.Start(clusterId, ipAddress.ToString(), serverPort, new ConsulProvider(new ConsulProviderOptions
 			//{
 			//	ServiceTtl = TimeSpan.FromSeconds(5),
@@ -107,41 +110,24 @@ namespace ProtoBroker.Playground
 		}
 	}
 
-	public class CacheActor : IActor
-	{
-		public static long InstanceCount=0;
-
-		public CacheActor()
-		{
-			Console.Out.WriteLine("Instance Count " + InstanceCount++);
-		}
-
-		public Task ReceiveAsync(IContext context)
-		{
-			switch (context.Message)
-			{
-				case string s:
-					Console.Out.WriteLine("Cache Entry Updated with " + s);
-					break;
-			}
-
-			return Task.CompletedTask;
-		}
-	}
-
 	public class EntryPoint
 	{
 		public static async Task Main(string[] args)
 		{
-			IPublishSubscribe pubSub = PubSubAutoConfig.Auto("unique");
-			using (pubSub
+			IPublishSubscribe publishSubscribe1 = PubSubAutoConfig.Auto("unique1");
+			IPublishSubscribe publishSubscribe2 = PubSubAutoConfig.Auto("unique2");
+			using (publishSubscribe1
 				.Observe<string>("*")
-				.Subscribe(_ => { Console.Out.WriteLine(_); }))
+				.Subscribe(_ => { Console.Out.WriteLine("U1: " + _); }))
+			using (publishSubscribe2
+				.Observe<string>("*")
+				.Subscribe(_ => { Console.Out.WriteLine("U2: " + _); }))
 			{
 				while (true)
 				{
 					Console.ReadLine();
-					pubSub.Publish("00000000-0000-0000-0000-000000000000_AgentPresence_DictionaryGrainDictionary", "Hello");
+					publishSubscribe1.Publish("00000000-0000-0000-0000-000000000000_AgentPresence_DictionaryGrainDictionary", "Hello1");
+					publishSubscribe2.Publish("00000000-0000-0000-0000-000000000000_AgentPresence_DictionaryGrainDictionary", "Hello2");
 				}
 			}
 		}
