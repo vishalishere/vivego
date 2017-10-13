@@ -9,14 +9,14 @@ namespace vivego.Orleans.Providers.Stream
 	public class PublishSubscribeStreamConfiguration
 	{
 		// Names
-		private const string InMemoryCacheSizeParam = "InMemoryCacheSize";
+		public const string InMemoryCacheSizeParam = "InMemoryCacheSize";
 
-		private const string NumberOfQueuesParam = "NumberOfQueues";
+		public const string NumberOfQueuesParam = "NumberOfQueues";
 
 		// Default values
-		private const int DefaultInMemoryCacheSizeParam = 1024;
+		public const int DefaultInMemoryCacheSizeParam = 1024;
 
-		private const int DefaultNumOfQueues = 6;
+		public const int DefaultNumOfQueues = 6;
 
 		public PublishSubscribeStreamConfiguration(IProviderConfiguration config)
 		{

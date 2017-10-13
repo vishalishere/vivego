@@ -133,14 +133,7 @@ namespace ProtoBroker.Playground
 	{
 		public static async Task Main(string[] args)
 		{
-			Actor.EventStream.Subscribe<ClusterTopologyEvent>(clusterTopologyEvent =>
-			{
-				Console.Out.WriteLine("Topology: " + string.Join(";", clusterTopologyEvent.Statuses.Select(memberStatus => $"{memberStatus.Address}-{memberStatus.Alive}")));
-				Console.Out.WriteLine("");
-			});
-
 			IPublishSubscribe pubSub = PubSubAutoConfig.Auto("unique");
-
 			using (pubSub
 				.Observe<string>("*")
 				.Subscribe(_ => { Console.Out.WriteLine(_); }))

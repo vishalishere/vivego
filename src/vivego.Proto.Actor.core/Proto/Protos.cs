@@ -6,11 +6,11 @@
 using pb = global::Google.Protobuf;
 using pbc = global::Google.Protobuf.Collections;
 using pbr = global::Google.Protobuf.Reflection;
-using scg = global::System.Collections.Generic;
-namespace vivego.Proto.Messages {
+namespace vivego.Proto.Messages
+{
 
-  /// <summary>Holder for reflection information generated from Protos.proto</summary>
-  public static partial class ProtosReflection {
+	/// <summary>Holder for reflection information generated from Protos.proto</summary>
+	public static partial class ProtosReflection {
 
     #region Descriptor
     /// <summary>File descriptor for Protos.proto</summary>

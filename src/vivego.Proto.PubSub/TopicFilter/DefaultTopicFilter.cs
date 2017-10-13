@@ -2,9 +2,9 @@
 
 using vivego.Proto.PubSub.Messages;
 
-namespace vivego.Proto.PubSub
+namespace vivego.Proto.PubSub.TopicFilter
 {
-	internal class SubscriptionInfo
+	internal class DefaultTopicFilter : ITopicFilter
 	{
 		private const char WildCardChar = '*';
 		private const char FullWildCardChar = '>';
@@ -13,9 +13,12 @@ namespace vivego.Proto.PubSub
 		/// <summary>
 		///     Creates a subscription info object.
 		/// </summary>
-		public SubscriptionInfo(Subscription subscription)
+		public DefaultTopicFilter(Subscription subscription)
 		{
-			Subscription = subscription ?? throw new ArgumentNullException(nameof(subscription));
+			if (subscription == null)
+			{
+				throw new ArgumentNullException(nameof(subscription));
+			}
 
 			if (string.IsNullOrEmpty(subscription.Topic))
 			{
@@ -31,25 +34,25 @@ namespace vivego.Proto.PubSub
 					nameof(subscription.Topic));
 			}
 
-			HasWildcardSubject = wildCardPos > -1 || fullWildCardPos > -1;
-			bool matchAllSubjects = Topic[0] == FullWildCardChar;
+			bool hasWildcardSubject = wildCardPos > -1 || fullWildCardPos > -1;
+			bool matchAllSubjects = subscription.Topic[0] == FullWildCardChar;
 			string[] subjectParts = wildCardPos > -1
-				? Subscription.Topic.Split('.')
+				? subscription.Topic.Split('.')
 				: new string[0];
 
 			if (matchAllSubjects)
 			{
 				_matchPredicate = _ => true;
 			}
-			else if (!HasWildcardSubject)
+			else if (!hasWildcardSubject)
 			{
-				_matchPredicate = _ => Topic.Equals(_, StringComparison.Ordinal);
+				_matchPredicate = _ => subscription.Topic.Equals(_, StringComparison.Ordinal);
 			}
 			else if (fullWildCardPos > -1)
 			{
 				_matchPredicate = _ =>
 				{
-					string prefix = Topic.Substring(0, fullWildCardPos);
+					string prefix = subscription.Topic.Substring(0, fullWildCardPos);
 					return _.StartsWith(prefix, StringComparison.Ordinal);
 				};
 			}
@@ -80,23 +83,9 @@ namespace vivego.Proto.PubSub
 			}
 		}
 
-		public Subscription Subscription { get; }
-
-		/// <summary>
-		///     Gets the subject name the subscriber is subscribed to.
-		/// </summary>
-		public string Topic => Subscription.Topic;
-
-		/// <summary>
-		///     Gets the optionally specified queue group that the subscriber will join.
-		/// </summary>
-		public string Group => Subscription.Group;
-
-		public bool HasWildcardSubject { get; }
-
-		public bool Matches(string testSubject)
+		public bool Matches(string topic)
 		{
-			return _matchPredicate(testSubject);
+			return _matchPredicate(topic);
 		}
 	}
 }

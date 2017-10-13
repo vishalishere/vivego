@@ -11,6 +11,7 @@ using Proto.Remote;
 
 using vivego.core;
 using vivego.Proto.PubSub.Messages;
+using vivego.Proto.PubSub.TopicFilter;
 using vivego.Serializer.Abstractions;
 
 namespace vivego.Proto.PubSub
@@ -26,9 +27,15 @@ namespace vivego.Proto.PubSub
 		}
 
 		public PublishSubscribe(ISerializer<byte[]> serializer,
-			ILoggerFactory loggerFactory)
+			ILoggerFactory loggerFactory) : this(serializer, loggerFactory, subscription => new DefaultTopicFilter(subscription))
 		{
-			_localRouter = new PubSubRouterActor(loggerFactory).PubSubRouterActorPid;
+		}
+
+		public PublishSubscribe(ISerializer<byte[]> serializer,
+			ILoggerFactory loggerFactory,
+			Func<Subscription, ITopicFilter> topicFilterFactory)
+		{
+			_localRouter = new PublishSubscribeRouterActor(loggerFactory, topicFilterFactory).PubSubRouterActorPid;
 			_serializer = serializer;
 		}
 
