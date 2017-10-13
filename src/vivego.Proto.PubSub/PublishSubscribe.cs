@@ -16,7 +16,7 @@ using vivego.Serializer.Abstractions;
 
 namespace vivego.Proto.PubSub
 {
-	public class PublishSubscribe : IPublishSubscribe
+	public class PublishSubscribe : DisposableBase, IPublishSubscribe
 	{
 		private readonly PID _localRouter;
 		private readonly ISerializer<byte[]> _serializer;
@@ -40,6 +40,8 @@ namespace vivego.Proto.PubSub
 		{
 			_localRouter = new PublishSubscribeRouterActor(clusterName, loggerFactory, topicFilterFactory).PubSubRouterActorPid;
 			_serializer = serializer;
+
+			RegisterDisposable(new AnonymousDisposable(() => _localRouter.Stop()));
 		}
 
 		public void Publish<T>(string topic, T t, string group = null)

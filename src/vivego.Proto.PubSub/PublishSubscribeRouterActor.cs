@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 
 using Proto;
 using Proto.Cluster;
+using Proto.Mailbox;
 
 using vivego.core;
 using vivego.Proto.PubSub.Messages;
@@ -41,7 +42,9 @@ namespace vivego.Proto.PubSub
 
 			_logger = loggerFactory.CreateLogger<PublishSubscribeRouterActor>();
 			_publishSubscribeRouterActorName = $"{clusterName}_{typeof(PublishSubscribeRouterActor).FullName}";
-			PubSubRouterActorPid = Actor.SpawnNamed(Actor.FromFunc(ReceiveAsync), _publishSubscribeRouterActorName);
+			Props props = Actor.FromFunc(ReceiveAsync)
+				.WithMailbox(() => BoundedMailbox.Create(8192));
+			PubSubRouterActorPid = Actor.SpawnNamed(props, _publishSubscribeRouterActorName);
 			_topologySubscription = Actor.EventStream
 				.Subscribe<ClusterTopologyEvent>(clusterTopologyEvent =>
 				{

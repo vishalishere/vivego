@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
@@ -114,20 +116,33 @@ namespace ProtoBroker.Playground
 	{
 		public static async Task Main(string[] args)
 		{
+			long counter = 0;
 			IPublishSubscribe publishSubscribe1 = PubSubAutoConfig.Auto("unique1");
 			IPublishSubscribe publishSubscribe2 = PubSubAutoConfig.Auto("unique2");
+			Stopwatch sw = Stopwatch.StartNew();
 			using (publishSubscribe1
-				.Observe<string>("*")
+				.Observe<string>("*", "Group")
 				.Subscribe(_ => { Console.Out.WriteLine("U1: " + _); }))
 			using (publishSubscribe2
 				.Observe<string>("*")
-				.Subscribe(_ => { Console.Out.WriteLine("U2: " + _); }))
+				.Subscribe(_ =>
+				{
+					var c = Interlocked.Increment(ref counter);
+					if (c % 100000 == 0)
+					{
+						Console.Out.WriteLine(100000 / sw.Elapsed.TotalSeconds);
+						sw.Restart();
+					}
+				}))
 			{
 				while (true)
 				{
 					Console.ReadLine();
-					publishSubscribe1.Publish("00000000-0000-0000-0000-000000000000_AgentPresence_DictionaryGrainDictionary", "Hello1");
-					publishSubscribe2.Publish("00000000-0000-0000-0000-000000000000_AgentPresence_DictionaryGrainDictionary", "Hello2");
+
+					foreach (int i in Enumerable.Range(0, 10000000))
+					{
+						publishSubscribe2.Publish("00000000-0000-0000-0000-000000000000_AgentPresence_DictionaryGrainDictionary", "Hello2");
+					}
 				}
 			}
 		}
