@@ -80,9 +80,21 @@ namespace vivego.Proto.PubSub
 			{
 				string group = valuePair.Key;
 				PID[] matches = Lookup(group, message, valuePair.Value);
-				if (matches.Length > 0)
+				if (string.IsNullOrEmpty(group))
 				{
-					PID route = _routeSelector.Select(message, group, matches);
+					foreach (PID match in matches)
+					{
+						yield return match;
+					}
+				}
+				else
+				{
+					if (matches.Length <= 0)
+					{
+						continue;
+					}
+
+					PID route = _routeSelector.Select(message, @group, matches);
 					yield return route;
 				}
 			}
@@ -158,11 +170,12 @@ namespace vivego.Proto.PubSub
 					{
 						if (groupSubscription.Value.TryGetValue(terminated.Who, out (ITopicFilter, Subscription Subscription) tuple2))
 						{
+							groupSubscription.Value.Remove(terminated.Who);
+							_lookupCache.Clear();
 							_logger.LogDebug("Removed subscription with PID: '{0}'; Topic: {1}; Group: {2}", tuple2.Subscription.PID, tuple2.Subscription.Topic, tuple2.Subscription.Group);
 						}
 					}
 
-					_lookupCache.Clear();
 					break;
 				}
 			}

@@ -126,7 +126,7 @@ namespace ProtoBroker.Playground
 			//		Console.Out.WriteLine(_);
 			//	}))
 			using (publishSubscribe1
-				.Observe<string>("*", "a")
+				.Observe<string>("*", "groupa")
 				.Subscribe(_ =>
 				{
 					Console.Out.WriteLine("group: " + _);
