@@ -50,7 +50,7 @@ namespace vivego.Orleans.Providers.Stream
 					RequestContext = requestContext
 				};
 
-				_publishSubscribe.Publish(queueidString, messageData, queueidString);
+				_publishSubscribe.Publish(queueidString, messageData);
 			}
 
 			return Task.CompletedTask;

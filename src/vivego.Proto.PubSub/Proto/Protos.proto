@@ -14,6 +14,5 @@ message Subscription {
 
 message Message {
 	string Topic = 1;
-	string Group = 2;
-	bytes Data = 3;
+	bytes Data = 2;
 }

@@ -23,7 +23,7 @@ namespace vivego.Orleans.Playground
 	{
 		private static void Main()
 		{
-			OrleansStartup orleansStartup = new OrleansStartup();
+			OrleansStartup orleansStartup = new OrleansStartup("clusterName");
 			ClusterConfiguration siloConfig = ClusterConfiguration
 				.LocalhostPrimarySilo(PortUtils.FindAvailablePortIncrementally(22222),
 					PortUtils.FindAvailablePortIncrementally(40000))
@@ -57,11 +57,11 @@ namespace vivego.Orleans.Playground
 	{
 		public IPublishSubscribe PublishSubscribe { get; set; }
 
-		public OrleansStartup()
+		public OrleansStartup(string clusterName)
 		{
 			ILoggerFactory loggerFactory = new NullLoggerFactory();
 			ISerializer<byte[]> serializer = new MessagePackSerializer();
-			PublishSubscribe = new PublishSubscribe(serializer, loggerFactory);
+			PublishSubscribe = new PublishSubscribe(clusterName, serializer, loggerFactory);
 		}
 
 		public IServiceProvider ConfigureServices(IServiceCollection services)

@@ -21,8 +21,11 @@ namespace vivego.Proto.PubSub
 		private readonly ILogger<PublishSubscribeRouterActor> _logger;
 		private readonly Dictionary<string, PID[]> _lookupCache = new Dictionary<string, PID[]>();
 
+		private readonly Dictionary<PID, (ITopicFilter, Subscription)> _subscriptions =
+			new Dictionary<PID, (ITopicFilter, Subscription)>();
+
 		private readonly Dictionary<string, (Counter Counter, Dictionary<PID, (ITopicFilter, Subscription)> Subscriptions)>
-			_subscriptions = new Dictionary<string, (Counter, Dictionary<PID, (ITopicFilter, Subscription)>)>();
+			_groupSubscriptions = new Dictionary<string, (Counter, Dictionary<PID, (ITopicFilter, Subscription)>)>();
 
 		private readonly Subscription<object> _topologySubscription;
 		private PID[] _pubSubRouters = new PID[0];
@@ -54,24 +57,33 @@ namespace vivego.Proto.PubSub
 
 		public PID PubSubRouterActorPid { get; }
 
-		private static string MakeCacheKey(string topic, string group)
+		private PID[] Lookup(string cacheKey, Message message, Dictionary<PID, (ITopicFilter TopicFilter, Subscription subscription)> subscriptions)
 		{
-			return $"__{topic}:{group}";
-		}
-
-		private PID[] Lookup(Message message, Dictionary<PID, (ITopicFilter Filter, Subscription)> subscriptionDictionary)
-		{
-			string cacheKey = MakeCacheKey(message.Topic, message.Group);
-			if (!_lookupCache.TryGetValue(cacheKey, out PID[] subscriptions))
+			if (!_lookupCache.TryGetValue(cacheKey, out PID[] cachedSubscriptions))
 			{
-				subscriptions = subscriptionDictionary
-					.Where(pair => pair.Value.Filter.Matches(message.Topic))
+				cachedSubscriptions = subscriptions
+					.Where(pair => pair.Value.TopicFilter.Matches(message.Topic))
 					.Select(pair => pair.Key)
 					.ToArray();
-				_lookupCache.Add(cacheKey, subscriptions);
 			}
 
-			return subscriptions;
+			return cachedSubscriptions;
+		}
+
+		private IEnumerable<PID> LookupGroups(Message message)
+		{
+			foreach (KeyValuePair<string, (Counter Counter, Dictionary<PID, (ITopicFilter, Subscription)> Subscriptions)> valuePair in _groupSubscriptions)
+			{
+				PID[] matches = Lookup(valuePair.Key, message, valuePair.Value.Subscriptions);
+				Counter counter = valuePair.Value.Counter;
+				yield return matches[counter.Next() % matches.Length];
+			}
+		}
+
+		private IEnumerable<PID> Lookup(Message message)
+		{
+			return Lookup("__nonGroups", message, _subscriptions)
+				.Concat(LookupGroups(message));
 		}
 
 		private Task ReceiveAsync(IContext context)
@@ -88,17 +100,18 @@ namespace vivego.Proto.PubSub
 							return routerPid;
 						})
 						.ToArray();
-					foreach (PID routerPid in _pubSubRouters)
-					{
-						foreach (KeyValuePair<string, (Counter Counter, Dictionary<PID, (ITopicFilter, Subscription)> Subscriptions)> pair in
-							_subscriptions)
+					
+					_subscriptions
+						.Select(tuple => tuple.Value.Item2)
+						.Concat(_groupSubscriptions.SelectMany(pair => pair.Value.Subscriptions.Select(valuePair => valuePair.Value.Item2)))
+						.DistinctBy(tuple => tuple.PID)
+						.ForEach(subscription =>
 						{
-							foreach (KeyValuePair<PID, (ITopicFilter, Subscription Subscription)> subscriptionInfo in pair.Value.Subscriptions)
+							foreach (PID routerPid in _pubSubRouters)
 							{
-								routerPid.Tell(subscriptionInfo.Value.Subscription);
+								routerPid.Tell(subscription);
 							}
-						}
-					}
+						});
 
 					_logger.LogDebug("Topology changed to: {0}",
 						string.Join(";", clusterTopologyEvent
@@ -108,69 +121,62 @@ namespace vivego.Proto.PubSub
 
 					break;
 				case Message message:
-					if (_subscriptions.TryGetValue(message.Group,
-						out (Counter Counter, Dictionary<PID, (ITopicFilter, Subscription)> Subscriptions) subscriptionDictionary))
+					foreach (PID pid in Lookup(message))
 					{
-						PID[] pids = Lookup(message, subscriptionDictionary.Subscriptions);
-						if (string.IsNullOrEmpty(message.Group))
-						{
-							foreach (PID pid in pids)
-							{
-								pid.Tell(message);
-							}
-						}
-						else
-						{
-							int counter = subscriptionDictionary.Counter.Next();
-							PID pid = pids[counter % pids.Length];
-							pid.Tell(message);
-						}
+						pid.Tell(message);
 					}
 
 					break;
 				case Subscription subscription:
 				{
-					if (!_subscriptions.TryGetValue(subscription.Group,
-						out (Counter Counter, Dictionary<PID, (ITopicFilter, Subscription)> Subscriptions) subscriptions))
+					Dictionary<PID, (ITopicFilter, Subscription)> dictionary;
+					if (string.IsNullOrEmpty(subscription.Group))
 					{
-						subscriptions = (new Counter(), new Dictionary<PID, (ITopicFilter, Subscription)>());
-						_subscriptions.Add(subscription.Group, subscriptions);
+						dictionary = _subscriptions;
+					}
+					else
+					{
+						if (!_groupSubscriptions.TryGetValue(subscription.Group,
+							out (Counter Counter, Dictionary<PID, (ITopicFilter, Subscription)> Subscriptions) subscriptions))
+						{
+							subscriptions = (new Counter(), new Dictionary<PID, (ITopicFilter, Subscription)>());
+							_groupSubscriptions.Add(subscription.Group, subscriptions);
+						}
+
+						dictionary = subscriptions.Subscriptions;
 					}
 
-					if (!subscriptions.Subscriptions.TryGetValue(subscription.PID, out (ITopicFilter, Subscription) subscriptionInfo))
+					ITopicFilter topicFilter = _topicFilterFactory(subscription);
+					if (dictionary.TryAdd(subscription.PID, (topicFilter, subscription)))
 					{
-						_logger.LogDebug("Added subscription from: '{0}', with topic '{1}' and group: '{2}'", subscription.PID, subscription.Topic, subscription.Group);
-						ITopicFilter topicFilter = _topicFilterFactory(subscription);
-						subscriptionInfo = (topicFilter, subscription);
-						subscriptions.Subscriptions.Add(subscription.PID, subscriptionInfo);
 						context.Watch(subscription.PID);
 						_lookupCache.Clear();
 						foreach (PID routerPid in _pubSubRouters)
 						{
 							routerPid.Tell(subscription);
 						}
+
+						_logger.LogDebug("Added subscription from: '{0}', with topic '{1}' and group: '{2}'", subscription.PID, subscription.Topic, subscription.Group);
 					}
 
 					break;
 				}
 				case Terminated terminated:
 				{
-					foreach (KeyValuePair<string, (Counter Counter, Dictionary<PID, (ITopicFilter, Subscription)> Subscriptions)> pair in
-						_subscriptions.ToArray())
+					if (_subscriptions.TryGetValue(terminated.Who, out (ITopicFilter, Subscription Subscription) tuple))
 					{
-						if (pair.Value.Subscriptions.TryGetValue(terminated.Who, out (ITopicFilter, Subscription Subscription) subscriptionInfo))
-						{
-							_lookupCache.Clear();
-							pair.Value.Subscriptions.Remove(terminated.Who);
+						_logger.LogDebug("Removed subscription with PID: '{0}'; Topic: {1}", tuple.Subscription.PID, tuple.Subscription.Topic);
+					}
 
-							_logger.LogDebug("Removed subscription from: '{0}', with topic '{1}' and group: '{2}'", subscriptionInfo.Subscription.PID, subscriptionInfo.Subscription.Topic, subscriptionInfo.Subscription.Group);
-							if (pair.Value.Subscriptions.Count == 0)
-							{
-								_subscriptions.Remove(pair.Key);
-							}
+					foreach (var groupSubscription in _groupSubscriptions)
+					{
+						if (groupSubscription.Value.Subscriptions.TryGetValue(terminated.Who, out (ITopicFilter, Subscription Subscription) tuple2))
+						{
+							_logger.LogDebug("Removed subscription with PID: '{0}'; Topic: {1}; Group: {2}", tuple2.Subscription.PID, tuple2.Subscription.Topic, tuple2.Subscription.Group);
 						}
 					}
 
+					_lookupCache.Clear();
 					break;
 				}
 			}

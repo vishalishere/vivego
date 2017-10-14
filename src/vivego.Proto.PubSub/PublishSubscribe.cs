@@ -44,25 +44,24 @@ namespace vivego.Proto.PubSub
 			RegisterDisposable(new AnonymousDisposable(() => _localRouter.Stop()));
 		}
 
-		public void Publish<T>(string topic, T t, string group = null)
+		public void Publish<T>(string topic, T t)
 		{
 			byte[] serialized = _serializer.Serialize(t);
 			_localRouter.Tell(new Message
 			{
 				Topic = topic,
-				Group = group ?? string.Empty,
 				Data = ByteString.CopyFrom(serialized)
 			});
 		}
 
-		public IObservable<(string Topic, string Group, T Data)> Observe<T>(string topic, string group = null)
+		public IObservable<(string Topic, T Data)> Observe<T>(string topic, string group = null)
 		{
 			if (string.IsNullOrEmpty(topic))
 			{
 				throw new ArgumentNullException(nameof(topic));
 			}
 
-			return Observable.Create<(string Topic, string Group, T Data)>(observer =>
+			return Observable.Create<(string Topic, T Data)>(observer =>
 			{
 				Props props = Actor.FromFunc(context =>
 				{
@@ -70,7 +69,7 @@ namespace vivego.Proto.PubSub
 					{
 						case Message message:
 							T deserialized = _serializer.Deserialize<T>(message.Data.ToByteArray());
-							observer.OnNext((message.Topic, message.Group, deserialized));
+							observer.OnNext((message.Topic, deserialized));
 							break;
 						case Stopped _:
 							observer.OnCompleted();

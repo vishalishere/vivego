@@ -87,7 +87,7 @@ namespace ProtoBroker.Playground
 				//new IPEndPoint(ipAddress, 35103)B
 			};
 
-			ILoggerFactory loggerFactory = new LoggerFactory().AddConsole(LogLevel.Warning);
+			ILoggerFactory loggerFactory = new LoggerFactory().AddConsole(LogLevel.Debug);
 			//loggerFactory
 			//	.CreateLogger("Auto")
 			//	.LogDebug("Seed endpoints: {0}", string.Join(";", seedsEndpoints.Select(endPoint => endPoint.ToString())));
@@ -118,31 +118,24 @@ namespace ProtoBroker.Playground
 		{
 			long counter = 0;
 			IPublishSubscribe publishSubscribe1 = PubSubAutoConfig.Auto("unique1");
-			IPublishSubscribe publishSubscribe2 = PubSubAutoConfig.Auto("unique2");
 			Stopwatch sw = Stopwatch.StartNew();
 			using (publishSubscribe1
-				.Observe<string>("*", "Group")
-				.Subscribe(_ => { Console.Out.WriteLine("U1: " + _); }))
-			using (publishSubscribe2
 				.Observe<string>("*")
 				.Subscribe(_ =>
 				{
-					var c = Interlocked.Increment(ref counter);
-					if (c % 100000 == 0)
-					{
-						Console.Out.WriteLine(100000 / sw.Elapsed.TotalSeconds);
-						sw.Restart();
-					}
+					Console.Out.WriteLine(_);
+				}))
+			using (publishSubscribe1
+				.Observe<string>("*", "a")
+				.Subscribe(_ =>
+				{
+					Console.Out.WriteLine("group: " + _);
 				}))
 			{
 				while (true)
 				{
 					Console.ReadLine();
-
-					foreach (int i in Enumerable.Range(0, 10000000))
-					{
-						publishSubscribe2.Publish("00000000-0000-0000-0000-000000000000_AgentPresence_DictionaryGrainDictionary", "Hello2");
-					}
+					publishSubscribe1.Publish("a", "Hello2");
 				}
 			}
 		}

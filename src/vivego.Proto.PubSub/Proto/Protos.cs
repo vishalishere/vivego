@@ -22,16 +22,16 @@ namespace vivego.Proto.PubSub.Messages {
     static ProtosReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "CgxQcm90b3MucHJvdG8SCG1lc3NhZ2VzGhZSZWZlcmVuY2UvUHJvdG9zLnBy",
-            "b3RvIkUKDFN1YnNjcmlwdGlvbhINCgVUb3BpYxgBIAEoCRINCgVHcm91cBgC",
-            "IAEoCRIXCgNQSUQYAyABKAsyCi5hY3Rvci5QSUQiNQoHTWVzc2FnZRINCgVU",
-            "b3BpYxgBIAEoCRINCgVHcm91cBgCIAEoCRIMCgREYXRhGAMgASgMQh+qAhx2",
-            "aXZlZ28uUHJvdG8uUHViU3ViLk1lc3NhZ2VzYgZwcm90bzM="));
+            "CgxQcm90b3MucHJvdG8SE3ZpdmVnby5Qcm90by5QdWJTdWIaFlJlZmVyZW5j",
+            "ZS9Qcm90b3MucHJvdG8iRQoMU3Vic2NyaXB0aW9uEg0KBVRvcGljGAEgASgJ",
+            "Eg0KBUdyb3VwGAIgASgJEhcKA1BJRBgDIAEoCzIKLmFjdG9yLlBJRCImCgdN",
+            "ZXNzYWdlEg0KBVRvcGljGAEgASgJEgwKBERhdGEYAiABKAxCH6oCHHZpdmVn",
+            "by5Qcm90by5QdWJTdWIuTWVzc2FnZXNiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Proto.ProtosReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::vivego.Proto.PubSub.Messages.Subscription), global::vivego.Proto.PubSub.Messages.Subscription.Parser, new[]{ "Topic", "Group", "PID" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::vivego.Proto.PubSub.Messages.Message), global::vivego.Proto.PubSub.Messages.Message.Parser, new[]{ "Topic", "Group", "Data" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::vivego.Proto.PubSub.Messages.Message), global::vivego.Proto.PubSub.Messages.Message.Parser, new[]{ "Topic", "Data" }, null, null, null)
           }));
     }
     #endregion
@@ -242,7 +242,6 @@ namespace vivego.Proto.PubSub.Messages {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Message(Message other) : this() {
       topic_ = other.topic_;
-      group_ = other.group_;
       data_ = other.data_;
     }
 
@@ -262,19 +261,8 @@ namespace vivego.Proto.PubSub.Messages {
       }
     }
 
-    /// <summary>Field number for the "Group" field.</summary>
-    public const int GroupFieldNumber = 2;
-    private string group_ = "";
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string Group {
-      get { return group_; }
-      set {
-        group_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-      }
-    }
-
     /// <summary>Field number for the "Data" field.</summary>
-    public const int DataFieldNumber = 3;
+    public const int DataFieldNumber = 2;
     private pb::ByteString data_ = pb::ByteString.Empty;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pb::ByteString Data {
@@ -298,7 +286,6 @@ namespace vivego.Proto.PubSub.Messages {
         return true;
       }
       if (Topic != other.Topic) return false;
-      if (Group != other.Group) return false;
       if (Data != other.Data) return false;
       return true;
     }
@@ -307,7 +294,6 @@ namespace vivego.Proto.PubSub.Messages {
     public override int GetHashCode() {
       int hash = 1;
       if (Topic.Length != 0) hash ^= Topic.GetHashCode();
-      if (Group.Length != 0) hash ^= Group.GetHashCode();
       if (Data.Length != 0) hash ^= Data.GetHashCode();
       return hash;
     }
@@ -323,12 +309,8 @@ namespace vivego.Proto.PubSub.Messages {
         output.WriteRawTag(10);
         output.WriteString(Topic);
       }
-      if (Group.Length != 0) {
-        output.WriteRawTag(18);
-        output.WriteString(Group);
-      }
       if (Data.Length != 0) {
-        output.WriteRawTag(26);
+        output.WriteRawTag(18);
         output.WriteBytes(Data);
       }
     }
@@ -338,9 +320,6 @@ namespace vivego.Proto.PubSub.Messages {
       int size = 0;
       if (Topic.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Topic);
-      }
-      if (Group.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(Group);
       }
       if (Data.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeBytesSize(Data);
@@ -355,9 +334,6 @@ namespace vivego.Proto.PubSub.Messages {
       }
       if (other.Topic.Length != 0) {
         Topic = other.Topic;
-      }
-      if (other.Group.Length != 0) {
-        Group = other.Group;
       }
       if (other.Data.Length != 0) {
         Data = other.Data;
@@ -377,10 +353,6 @@ namespace vivego.Proto.PubSub.Messages {
             break;
           }
           case 18: {
-            Group = input.ReadString();
-            break;
-          }
-          case 26: {
             Data = input.ReadBytes();
             break;
           }

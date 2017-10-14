@@ -4,7 +4,7 @@ namespace vivego.Proto.PubSub
 {
 	public interface IPublishSubscribe
 	{
-		void Publish<T>(string topic, T t, string group = null);
-		IObservable<(string Topic, string Group, T Data)> Observe<T>(string topic, string group = null);
+		void Publish<T>(string topic, T t);
+		IObservable<(string Topic, T Data)> Observe<T>(string topic, string group = null);
 	}
 }
