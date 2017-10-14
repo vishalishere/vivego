@@ -7,10 +7,10 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
+using Proto;
 using Proto.Cluster;
 
 using vivego.core;
@@ -87,7 +87,7 @@ namespace ProtoBroker.Playground
 				//new IPEndPoint(ipAddress, 35103)B
 			};
 
-			ILoggerFactory loggerFactory = new LoggerFactory().AddConsole(LogLevel.Debug);
+			ILoggerFactory loggerFactory = new LoggerFactory().AddConsole(LogLevel.Warning);
 			//loggerFactory
 			//	.CreateLogger("Auto")
 			//	.LogDebug("Seed endpoints: {0}", string.Join(";", seedsEndpoints.Select(endPoint => endPoint.ToString())));
