@@ -24,7 +24,7 @@ namespace vivego.Proto.PubSub
 		private readonly Dictionary<string, PID[]> _lookupCache = new Dictionary<string, PID[]>();
 
 		private readonly Dictionary<string, Dictionary<PID, (ITopicFilter TopicFilter, Subscription Subscription)>>
-			_groupSubscriptions = new Dictionary<string, Dictionary<PID, (ITopicFilter, Subscription)>>();
+			_subscriptions = new Dictionary<string, Dictionary<PID, (ITopicFilter, Subscription)>>();
 
 		private readonly Subscription<object> _topologySubscription;
 		private PID[] _pubSubRouters = new PID[0];
@@ -76,28 +76,15 @@ namespace vivego.Proto.PubSub
 
 		private IEnumerable<PID> Lookup(Message message)
 		{
-			foreach (KeyValuePair<string, Dictionary<PID, (ITopicFilter, Subscription)>> valuePair in _groupSubscriptions)
-			{
-				string group = valuePair.Key;
-				PID[] matches = Lookup(group, message, valuePair.Value);
-				if (string.IsNullOrEmpty(group))
+			return _subscriptions
+				.SelectMany(pair =>
 				{
-					foreach (PID match in matches)
-					{
-						yield return match;
-					}
-				}
-				else
-				{
-					if (matches.Length <= 0)
-					{
-						continue;
-					}
-
-					PID route = _routeSelector.Select(message, @group, matches);
-					yield return route;
-				}
-			}
+					string group = pair.Key;
+					PID[] matches = Lookup(group, message, pair.Value);
+					return matches.Length > 0
+						? _routeSelector.Select(message, group, matches)
+						: Enumerable.Empty<PID>();
+				});
 		}
 
 		private Task ReceiveAsync(IContext context)
@@ -115,7 +102,7 @@ namespace vivego.Proto.PubSub
 						})
 						.ToArray();
 
-					_groupSubscriptions
+					_subscriptions
 						.SelectMany(pair => pair.Value.Select(valuePair => valuePair.Value.Subscription))
 						.DistinctBy(subscription => subscription.PID)
 						.ForEach(subscription =>
@@ -142,10 +129,10 @@ namespace vivego.Proto.PubSub
 					break;
 				case Subscription subscription:
 				{
-					if (!_groupSubscriptions.TryGetValue(subscription.Group, out Dictionary<PID, (ITopicFilter, Subscription)> subscriptions))
+					if (!_subscriptions.TryGetValue(subscription.Group, out Dictionary<PID, (ITopicFilter, Subscription)> subscriptions))
 					{
 						subscriptions = new Dictionary<PID, (ITopicFilter, Subscription)>();
-						_groupSubscriptions.Add(subscription.Group, subscriptions);
+						_subscriptions.Add(subscription.Group, subscriptions);
 					}
 
 					ITopicFilter topicFilter = _topicFilterFactory(subscription);
@@ -166,7 +153,7 @@ namespace vivego.Proto.PubSub
 				}
 				case Terminated terminated:
 				{
-					foreach (var groupSubscription in _groupSubscriptions)
+					foreach (var groupSubscription in _subscriptions)
 					{
 						if (groupSubscription.Value.TryGetValue(terminated.Who, out (ITopicFilter, Subscription Subscription) tuple2))
 						{

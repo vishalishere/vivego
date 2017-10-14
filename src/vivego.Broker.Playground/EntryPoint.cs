@@ -125,17 +125,28 @@ namespace ProtoBroker.Playground
 			//	{
 			//		Console.Out.WriteLine(_);
 			//	}))
+
+
+
 			using (publishSubscribe1
 				.Observe<string>("*", "groupa")
 				.Subscribe(_ =>
 				{
-					Console.Out.WriteLine("group: " + _);
+					//Console.Out.WriteLine("group: " + _);
+					var c = Interlocked.Increment(ref counter);
+					if (c % 100000 == 0)
+					{
+						Console.Out.WriteLine(c);
+					}
 				}))
 			{
 				while (true)
 				{
 					Console.ReadLine();
-					publishSubscribe1.Publish("a", "Hello2", "a");
+					foreach (int i in Enumerable.Range(0, 1000000))
+					{
+						publishSubscribe1.Publish("a", "Hello2", "a");
+					}
 				}
 			}
 		}

@@ -7,6 +7,11 @@ namespace vivego.core
 {
 	public static class EnumerableExtensions
 	{
+		public static IEnumerable<T> AsEnumerable<T>(this T value)
+		{
+			yield return value;
+		}
+
 		/// <summary>
 		///     Adds one or more sequences to the begin of the current sequence
 		/// </summary>
