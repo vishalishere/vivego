@@ -11,6 +11,7 @@ using Proto.Remote;
 
 using vivego.core;
 using vivego.Proto.PubSub.Messages;
+using vivego.Proto.PubSub.Route;
 using vivego.Proto.PubSub.TopicFilter;
 using vivego.Serializer.Abstractions;
 
@@ -28,7 +29,7 @@ namespace vivego.Proto.PubSub
 
 		public PublishSubscribe(string clusterName,
 			ISerializer<byte[]> serializer,
-			ILoggerFactory loggerFactory) : this(clusterName, serializer, loggerFactory, subscription => new DefaultTopicFilter(subscription))
+			ILoggerFactory loggerFactory) : this(clusterName, serializer, loggerFactory, new HashByRouteSelector(), subscription => new DefaultTopicFilter(subscription))
 		{
 		}
 
@@ -36,20 +37,22 @@ namespace vivego.Proto.PubSub
 			string clusterName,
 			ISerializer<byte[]> serializer,
 			ILoggerFactory loggerFactory,
+			IRouteSelector routeSelector,
 			Func<Subscription, ITopicFilter> topicFilterFactory)
 		{
-			_localRouter = new PublishSubscribeRouterActor(clusterName, loggerFactory, topicFilterFactory).PubSubRouterActorPid;
+			_localRouter = new PublishSubscribeRouterActor(clusterName, loggerFactory, routeSelector, topicFilterFactory).PubSubRouterActorPid;
 			_serializer = serializer;
 
 			RegisterDisposable(new AnonymousDisposable(() => _localRouter.Stop()));
 		}
 
-		public void Publish<T>(string topic, T t)
+		public void Publish<T>(string topic, T t, string hashBy = null)
 		{
 			byte[] serialized = _serializer.Serialize(t);
 			_localRouter.Tell(new Message
 			{
 				Topic = topic,
+				HashBy = hashBy ?? string.Empty,
 				Data = ByteString.CopyFrom(serialized)
 			});
 		}

@@ -14,5 +14,6 @@ message Subscription {
 
 message Message {
 	string Topic = 1;
-	bytes Data = 2;
+	string HashBy = 2;
+	bytes Data = 3;
 }

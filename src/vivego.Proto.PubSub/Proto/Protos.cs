@@ -24,14 +24,15 @@ namespace vivego.Proto.PubSub.Messages {
           string.Concat(
             "CgxQcm90b3MucHJvdG8SE3ZpdmVnby5Qcm90by5QdWJTdWIaFlJlZmVyZW5j",
             "ZS9Qcm90b3MucHJvdG8iRQoMU3Vic2NyaXB0aW9uEg0KBVRvcGljGAEgASgJ",
-            "Eg0KBUdyb3VwGAIgASgJEhcKA1BJRBgDIAEoCzIKLmFjdG9yLlBJRCImCgdN",
-            "ZXNzYWdlEg0KBVRvcGljGAEgASgJEgwKBERhdGEYAiABKAxCH6oCHHZpdmVn",
-            "by5Qcm90by5QdWJTdWIuTWVzc2FnZXNiBnByb3RvMw=="));
+            "Eg0KBUdyb3VwGAIgASgJEhcKA1BJRBgDIAEoCzIKLmFjdG9yLlBJRCI2CgdN",
+            "ZXNzYWdlEg0KBVRvcGljGAEgASgJEgwKBERhdGEYAiABKAwSDgoGSGFzaEJ5",
+            "GAMgASgJQh+qAhx2aXZlZ28uUHJvdG8uUHViU3ViLk1lc3NhZ2VzYgZwcm90",
+            "bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Proto.ProtosReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::vivego.Proto.PubSub.Messages.Subscription), global::vivego.Proto.PubSub.Messages.Subscription.Parser, new[]{ "Topic", "Group", "PID" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::vivego.Proto.PubSub.Messages.Message), global::vivego.Proto.PubSub.Messages.Message.Parser, new[]{ "Topic", "Data" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::vivego.Proto.PubSub.Messages.Message), global::vivego.Proto.PubSub.Messages.Message.Parser, new[]{ "Topic", "Data", "HashBy" }, null, null, null)
           }));
     }
     #endregion
@@ -243,6 +244,7 @@ namespace vivego.Proto.PubSub.Messages {
     public Message(Message other) : this() {
       topic_ = other.topic_;
       data_ = other.data_;
+      hashBy_ = other.hashBy_;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -272,6 +274,17 @@ namespace vivego.Proto.PubSub.Messages {
       }
     }
 
+    /// <summary>Field number for the "HashBy" field.</summary>
+    public const int HashByFieldNumber = 3;
+    private string hashBy_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string HashBy {
+      get { return hashBy_; }
+      set {
+        hashBy_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Message);
@@ -287,6 +300,7 @@ namespace vivego.Proto.PubSub.Messages {
       }
       if (Topic != other.Topic) return false;
       if (Data != other.Data) return false;
+      if (HashBy != other.HashBy) return false;
       return true;
     }
 
@@ -295,6 +309,7 @@ namespace vivego.Proto.PubSub.Messages {
       int hash = 1;
       if (Topic.Length != 0) hash ^= Topic.GetHashCode();
       if (Data.Length != 0) hash ^= Data.GetHashCode();
+      if (HashBy.Length != 0) hash ^= HashBy.GetHashCode();
       return hash;
     }
 
@@ -313,6 +328,10 @@ namespace vivego.Proto.PubSub.Messages {
         output.WriteRawTag(18);
         output.WriteBytes(Data);
       }
+      if (HashBy.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(HashBy);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -323,6 +342,9 @@ namespace vivego.Proto.PubSub.Messages {
       }
       if (Data.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeBytesSize(Data);
+      }
+      if (HashBy.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(HashBy);
       }
       return size;
     }
@@ -337,6 +359,9 @@ namespace vivego.Proto.PubSub.Messages {
       }
       if (other.Data.Length != 0) {
         Data = other.Data;
+      }
+      if (other.HashBy.Length != 0) {
+        HashBy = other.HashBy;
       }
     }
 
@@ -354,6 +379,10 @@ namespace vivego.Proto.PubSub.Messages {
           }
           case 18: {
             Data = input.ReadBytes();
+            break;
+          }
+          case 26: {
+            HashBy = input.ReadString();
             break;
           }
         }

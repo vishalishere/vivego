@@ -11,21 +11,20 @@ using Proto.Mailbox;
 
 using vivego.core;
 using vivego.Proto.PubSub.Messages;
+using vivego.Proto.PubSub.Route;
 using vivego.Proto.PubSub.TopicFilter;
 
 namespace vivego.Proto.PubSub
 {
 	internal class PublishSubscribeRouterActor : DisposableBase
 	{
+		private readonly IRouteSelector _routeSelector;
 		private readonly Func<Subscription, ITopicFilter> _topicFilterFactory;
 		private readonly ILogger<PublishSubscribeRouterActor> _logger;
 		private readonly Dictionary<string, PID[]> _lookupCache = new Dictionary<string, PID[]>();
 
-		private readonly Dictionary<PID, (ITopicFilter, Subscription)> _subscriptions =
-			new Dictionary<PID, (ITopicFilter, Subscription)>();
-
-		private readonly Dictionary<string, (Counter Counter, Dictionary<PID, (ITopicFilter, Subscription)> Subscriptions)>
-			_groupSubscriptions = new Dictionary<string, (Counter, Dictionary<PID, (ITopicFilter, Subscription)>)>();
+		private readonly Dictionary<string, Dictionary<PID, (ITopicFilter TopicFilter, Subscription Subscription)>>
+			_groupSubscriptions = new Dictionary<string, Dictionary<PID, (ITopicFilter, Subscription)>>();
 
 		private readonly Subscription<object> _topologySubscription;
 		private PID[] _pubSubRouters = new PID[0];
@@ -34,6 +33,7 @@ namespace vivego.Proto.PubSub
 		public PublishSubscribeRouterActor(
 			string clusterName,
 			ILoggerFactory loggerFactory,
+			IRouteSelector routeSelector,
 			Func<Subscription, ITopicFilter> topicFilterFactory)
 		{
 			if (loggerFactory == null)
@@ -41,6 +41,7 @@ namespace vivego.Proto.PubSub
 				throw new ArgumentNullException(nameof(loggerFactory));
 			}
 
+			_routeSelector = routeSelector ?? throw new ArgumentNullException(nameof(routeSelector));
 			_topicFilterFactory = topicFilterFactory ?? throw new ArgumentNullException(nameof(topicFilterFactory));
 
 			_logger = loggerFactory.CreateLogger<PublishSubscribeRouterActor>();
@@ -64,26 +65,27 @@ namespace vivego.Proto.PubSub
 				cachedSubscriptions = subscriptions
 					.Where(pair => pair.Value.TopicFilter.Matches(message.Topic))
 					.Select(pair => pair.Key)
+					.OrderBy(pid => pid.Address)
+					.ThenBy(pid => pid.Id)
 					.ToArray();
+				_lookupCache.Add(cacheKey, cachedSubscriptions);
 			}
 
 			return cachedSubscriptions;
 		}
 
-		private IEnumerable<PID> LookupGroups(Message message)
-		{
-			foreach (KeyValuePair<string, (Counter Counter, Dictionary<PID, (ITopicFilter, Subscription)> Subscriptions)> valuePair in _groupSubscriptions)
-			{
-				PID[] matches = Lookup(valuePair.Key, message, valuePair.Value.Subscriptions);
-				Counter counter = valuePair.Value.Counter;
-				yield return matches[counter.Next() % matches.Length];
-			}
-		}
-
 		private IEnumerable<PID> Lookup(Message message)
 		{
-			return Lookup("__nonGroups", message, _subscriptions)
-				.Concat(LookupGroups(message));
+			foreach (KeyValuePair<string, Dictionary<PID, (ITopicFilter, Subscription)>> valuePair in _groupSubscriptions)
+			{
+				string group = valuePair.Key;
+				PID[] matches = Lookup(group, message, valuePair.Value);
+				if (matches.Length > 0)
+				{
+					PID route = _routeSelector.Select(message, group, matches);
+					yield return route;
+				}
+			}
 		}
 
 		private Task ReceiveAsync(IContext context)
@@ -100,11 +102,10 @@ namespace vivego.Proto.PubSub
 							return routerPid;
 						})
 						.ToArray();
-					
-					_subscriptions
-						.Select(tuple => tuple.Value.Item2)
-						.Concat(_groupSubscriptions.SelectMany(pair => pair.Value.Subscriptions.Select(valuePair => valuePair.Value.Item2)))
-						.DistinctBy(tuple => tuple.PID)
+
+					_groupSubscriptions
+						.SelectMany(pair => pair.Value.Select(valuePair => valuePair.Value.Subscription))
+						.DistinctBy(subscription => subscription.PID)
 						.ForEach(subscription =>
 						{
 							foreach (PID routerPid in _pubSubRouters)
@@ -129,26 +130,16 @@ namespace vivego.Proto.PubSub
 					break;
 				case Subscription subscription:
 				{
-					Dictionary<PID, (ITopicFilter, Subscription)> dictionary;
-					if (string.IsNullOrEmpty(subscription.Group))
+					if (!_groupSubscriptions.TryGetValue(subscription.Group, out Dictionary<PID, (ITopicFilter, Subscription)> subscriptions))
 					{
-						dictionary = _subscriptions;
-					}
-					else
-					{
-						if (!_groupSubscriptions.TryGetValue(subscription.Group,
-							out (Counter Counter, Dictionary<PID, (ITopicFilter, Subscription)> Subscriptions) subscriptions))
-						{
-							subscriptions = (new Counter(), new Dictionary<PID, (ITopicFilter, Subscription)>());
-							_groupSubscriptions.Add(subscription.Group, subscriptions);
-						}
-
-						dictionary = subscriptions.Subscriptions;
+						subscriptions = new Dictionary<PID, (ITopicFilter, Subscription)>();
+						_groupSubscriptions.Add(subscription.Group, subscriptions);
 					}
 
 					ITopicFilter topicFilter = _topicFilterFactory(subscription);
-					if (dictionary.TryAdd(subscription.PID, (topicFilter, subscription)))
+					if (!subscriptions.ContainsKey(subscription.PID))
 					{
+						subscriptions.Add(subscription.PID, (topicFilter, subscription));
 						context.Watch(subscription.PID);
 						_lookupCache.Clear();
 						foreach (PID routerPid in _pubSubRouters)
@@ -163,14 +154,9 @@ namespace vivego.Proto.PubSub
 				}
 				case Terminated terminated:
 				{
-					if (_subscriptions.TryGetValue(terminated.Who, out (ITopicFilter, Subscription Subscription) tuple))
-					{
-						_logger.LogDebug("Removed subscription with PID: '{0}'; Topic: {1}", tuple.Subscription.PID, tuple.Subscription.Topic);
-					}
-
 					foreach (var groupSubscription in _groupSubscriptions)
 					{
-						if (groupSubscription.Value.Subscriptions.TryGetValue(terminated.Who, out (ITopicFilter, Subscription Subscription) tuple2))
+						if (groupSubscription.Value.TryGetValue(terminated.Who, out (ITopicFilter, Subscription Subscription) tuple2))
 						{
 							_logger.LogDebug("Removed subscription with PID: '{0}'; Topic: {1}; Group: {2}", tuple2.Subscription.PID, tuple2.Subscription.Topic, tuple2.Subscription.Group);
 						}

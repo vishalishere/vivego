@@ -119,12 +119,12 @@ namespace ProtoBroker.Playground
 			long counter = 0;
 			IPublishSubscribe publishSubscribe1 = PubSubAutoConfig.Auto("unique1");
 			Stopwatch sw = Stopwatch.StartNew();
-			using (publishSubscribe1
-				.Observe<string>("*")
-				.Subscribe(_ =>
-				{
-					Console.Out.WriteLine(_);
-				}))
+			//using (publishSubscribe1
+			//	.Observe<string>("*")
+			//	.Subscribe(_ =>
+			//	{
+			//		Console.Out.WriteLine(_);
+			//	}))
 			using (publishSubscribe1
 				.Observe<string>("*", "a")
 				.Subscribe(_ =>
@@ -135,7 +135,7 @@ namespace ProtoBroker.Playground
 				while (true)
 				{
 					Console.ReadLine();
-					publishSubscribe1.Publish("a", "Hello2");
+					publishSubscribe1.Publish("a", "Hello2", "a");
 				}
 			}
 		}
