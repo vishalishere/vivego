@@ -114,26 +114,17 @@ namespace ProtoBroker.Playground
 
 	public class EntryPoint
 	{
-		public static async Task Main(string[] args)
+		public static void Main(string[] args)
 		{
 			long counter = 0;
 			IPublishSubscribe publishSubscribe1 = PubSubAutoConfig.Auto("unique1");
 			Stopwatch sw = Stopwatch.StartNew();
-			//using (publishSubscribe1
-			//	.Observe<string>("*")
-			//	.Subscribe(_ =>
-			//	{
-			//		Console.Out.WriteLine(_);
-			//	}))
-
-
-
 			using (publishSubscribe1
 				.Observe<string>("*", "groupa")
 				.Subscribe(_ =>
 				{
 					//Console.Out.WriteLine("group: " + _);
-					var c = Interlocked.Increment(ref counter);
+					long c = Interlocked.Increment(ref counter);
 					if (c % 100000 == 0)
 					{
 						Console.Out.WriteLine(c);

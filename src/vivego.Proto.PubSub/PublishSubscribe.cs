@@ -12,7 +12,7 @@ using Proto.Remote;
 using vivego.core;
 using vivego.Proto.PubSub.Messages;
 using vivego.Proto.PubSub.Route;
-using vivego.Proto.PubSub.TopicFilter;
+using vivego.Proto.PubSub.Topic;
 using vivego.Serializer.Abstractions;
 
 namespace vivego.Proto.PubSub

@@ -1,4 +1,4 @@
-namespace vivego.Proto.PubSub.TopicFilter
+namespace vivego.Proto.PubSub.Topic
 {
 	public interface ITopicFilter
 	{

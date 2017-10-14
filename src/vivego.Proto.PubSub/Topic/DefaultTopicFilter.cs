@@ -2,7 +2,7 @@
 
 using vivego.Proto.PubSub.Messages;
 
-namespace vivego.Proto.PubSub.TopicFilter
+namespace vivego.Proto.PubSub.Topic
 {
 	internal class DefaultTopicFilter : ITopicFilter
 	{

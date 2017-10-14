@@ -12,7 +12,7 @@ using Proto.Mailbox;
 using vivego.core;
 using vivego.Proto.PubSub.Messages;
 using vivego.Proto.PubSub.Route;
-using vivego.Proto.PubSub.TopicFilter;
+using vivego.Proto.PubSub.Topic;
 
 namespace vivego.Proto.PubSub
 {
@@ -34,7 +34,8 @@ namespace vivego.Proto.PubSub
 			string clusterName,
 			ILoggerFactory loggerFactory,
 			IRouteSelector routeSelector,
-			Func<Subscription, ITopicFilter> topicFilterFactory)
+			Func<Subscription, ITopicFilter> topicFilterFactory,
+			int sendBufferSize = 8192)
 		{
 			if (loggerFactory == null)
 			{
@@ -47,7 +48,7 @@ namespace vivego.Proto.PubSub
 			_logger = loggerFactory.CreateLogger<PublishSubscribeRouterActor>();
 			_publishSubscribeRouterActorName = $"{clusterName}_{typeof(PublishSubscribeRouterActor).FullName}";
 			Props props = Actor.FromFunc(ReceiveAsync)
-				.WithMailbox(() => BoundedMailbox.Create(8192));
+				.WithMailbox(() => BoundedMailbox.Create(sendBufferSize));
 			PubSubRouterActorPid = Actor.SpawnNamed(props, _publishSubscribeRouterActorName);
 			_topologySubscription = Actor.EventStream
 				.Subscribe<ClusterTopologyEvent>(clusterTopologyEvent =>
