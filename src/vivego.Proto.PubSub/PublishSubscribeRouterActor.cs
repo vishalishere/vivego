@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Proto;
 using Proto.Cluster;
 using Proto.Mailbox;
+using Proto.Router;
 
 using vivego.core;
 using vivego.Proto.PubSub.Messages;
@@ -18,10 +19,9 @@ namespace vivego.Proto.PubSub
 {
 	internal class PublishSubscribeRouterActor : DisposableBase
 	{
-		private readonly IRouteSelector _routeSelector;
 		private readonly Func<Subscription, ITopicFilter> _topicFilterFactory;
 		private readonly ILogger<PublishSubscribeRouterActor> _logger;
-		private readonly Dictionary<string, PID[]> _lookupCache = new Dictionary<string, PID[]>();
+		private readonly Dictionary<string, PID> _lookupCache = new Dictionary<string, PID>();
 
 		private readonly Dictionary<string, Dictionary<PID, (ITopicFilter TopicFilter, Subscription Subscription)>>
 			_subscriptions = new Dictionary<string, Dictionary<PID, (ITopicFilter, Subscription)>>();
@@ -33,7 +33,6 @@ namespace vivego.Proto.PubSub
 		public PublishSubscribeRouterActor(
 			string clusterName,
 			ILoggerFactory loggerFactory,
-			IRouteSelector routeSelector,
 			Func<Subscription, ITopicFilter> topicFilterFactory,
 			int sendBufferSize = 8192)
 		{
@@ -42,13 +41,11 @@ namespace vivego.Proto.PubSub
 				throw new ArgumentNullException(nameof(loggerFactory));
 			}
 
-			_routeSelector = routeSelector ?? throw new ArgumentNullException(nameof(routeSelector));
 			_topicFilterFactory = topicFilterFactory ?? throw new ArgumentNullException(nameof(topicFilterFactory));
 
 			_logger = loggerFactory.CreateLogger<PublishSubscribeRouterActor>();
 			_publishSubscribeRouterActorName = $"{clusterName}_{typeof(PublishSubscribeRouterActor).FullName}";
-			Props props = Actor.FromFunc(ReceiveAsync)
-				.WithMailbox(() => BoundedMailbox.Create(sendBufferSize));
+			Props props = Actor.FromFunc(ReceiveAsync).WithMailbox(() => BoundedMailbox.Create(sendBufferSize));
 			PubSubRouterActorPid = Actor.SpawnNamed(props, _publishSubscribeRouterActorName);
 			_topologySubscription = Actor.EventStream
 				.Subscribe<ClusterTopologyEvent>(clusterTopologyEvent =>
@@ -59,33 +56,86 @@ namespace vivego.Proto.PubSub
 
 		public PID PubSubRouterActorPid { get; }
 
-		private PID[] Lookup(string group, Message message, Dictionary<PID, (ITopicFilter TopicFilter, Subscription subscription)> subscriptions)
+		protected virtual Props MakeRouterProps(Message message, string group, bool hashBy, PID[] pids)
 		{
-			string cacheKey = $"{group}_{message.Topic}";
-			if (!_lookupCache.TryGetValue(cacheKey, out PID[] cachedSubscriptions))
+			if (hashBy)
 			{
-				cachedSubscriptions = subscriptions
-					.Where(pair => pair.Value.TopicFilter.Matches(message.Topic))
-					.Select(pair => pair.Key)
-					.OrderBy(pid => pid.Address)
-					.ThenBy(pid => pid.Id)
-					.ToArray();
-				_lookupCache.Add(cacheKey, cachedSubscriptions);
+				return new ConsistentHashGroupRouterConfig(MD5Hasher.Hash, 100, pids).Props();
 			}
 
-			return cachedSubscriptions;
+			if (string.IsNullOrEmpty(group))
+			{
+				return Router.NewBroadcastGroup(pids);
+			}
+
+			return Router.NewRoundRobinGroup(pids);
+		}
+
+		private void ClearCache()
+		{
+			_lookupCache.Clear();
+		}
+
+		private PID Lookup(string group, Message message, Dictionary<PID, (ITopicFilter TopicFilter, Subscription Subscription)> subscriptions)
+		{
+			string cacheKey = $"{group}_{message.Topic}";
+			if (!_lookupCache.TryGetValue(cacheKey, out PID routerPid))
+			{
+				var matches = subscriptions
+					.Where(pair => pair.Value.TopicFilter.Matches(message.Topic))
+					.OrderBy(pair => pair.Value.Subscription.PID.Address)
+					.ThenBy(pair => pair.Value.Subscription.PID.Id)
+					.ToArray();
+
+				if (matches.Length == 0)
+				{
+					routerPid = Actor.Spawn(Actor.FromFunc(context => Task.CompletedTask));
+				}
+				else
+				{
+					PID[] matchedPids = matches
+						.Where(pair => !pair.Value.Subscription.HashBy)
+						.Select(pair => pair.Key)
+						.ToArray();
+					PID[] matchedHashByPids = matches
+						.Where(pair => pair.Value.Subscription.HashBy)
+						.Select(pair => pair.Key)
+						.ToArray();
+
+					if (matchedHashByPids.Length == 0)
+					{
+						Props routerProds = MakeRouterProps(message, group, false, matchedPids);
+						routerPid = Actor.Spawn(routerProds);
+					} else if (matchedPids.Length == 0)
+					{
+						Props routerProds = MakeRouterProps(message, group, true, matchedHashByPids);
+						routerPid = Actor.Spawn(routerProds);
+					}
+					else
+					{
+						Props hashByRouterProds = MakeRouterProps(message, group, true, matchedHashByPids);
+						PID hashByRouterPid = Actor.Spawn(hashByRouterProds);
+
+						Props routerProds = MakeRouterProps(message, group, false, matchedPids);
+						routerPid = Actor.Spawn(routerProds);
+
+						routerPid = Actor.Spawn(Router.NewBroadcastGroup(hashByRouterPid, routerPid));
+					}
+				}
+
+				_lookupCache.Add(cacheKey, routerPid);
+			}
+
+			return routerPid;
 		}
 
 		private IEnumerable<PID> Lookup(Message message)
 		{
 			return _subscriptions
-				.SelectMany(pair =>
+				.Select(pair =>
 				{
 					string group = pair.Key;
-					PID[] matches = Lookup(group, message, pair.Value);
-					return matches.Length > 0
-						? _routeSelector.Select(message, group, matches)
-						: Enumerable.Empty<PID>();
+					return Lookup(group, message, pair.Value);
 				});
 		}
 
@@ -142,7 +192,7 @@ namespace vivego.Proto.PubSub
 					{
 						subscriptions.Add(subscription.PID, (topicFilter, subscription));
 						context.Watch(subscription.PID);
-						_lookupCache.Clear();
+						ClearCache();
 						foreach (PID routerPid in _pubSubRouters)
 						{
 							routerPid.Tell(subscription);
@@ -160,7 +210,7 @@ namespace vivego.Proto.PubSub
 						if (groupSubscription.Value.TryGetValue(terminated.Who, out (ITopicFilter, Subscription Subscription) tuple2))
 						{
 							groupSubscription.Value.Remove(terminated.Who);
-							_lookupCache.Clear();
+							ClearCache();
 							_logger.LogDebug("Removed subscription with PID: '{0}'; Topic: {1}; Group: {2}", tuple2.Subscription.PID, tuple2.Subscription.Topic, tuple2.Subscription.Group);
 						}
 					}

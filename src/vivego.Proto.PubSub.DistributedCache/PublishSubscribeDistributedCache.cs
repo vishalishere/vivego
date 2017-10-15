@@ -95,7 +95,7 @@ namespace vivego.Proto.PubSub.DistributedCache
 			{
 				Key = key,
 				TopicResponse = _selfTopic
-			}.ToByteArray(), key);
+			}.ToByteArray());
 
 			if (token.CanBeCanceled)
 			{
@@ -120,7 +120,7 @@ namespace vivego.Proto.PubSub.DistributedCache
 			{
 				Key = key,
 				Value = ByteString.CopyFrom(value)
-			}.ToByteArray(), key);
+			}.ToByteArray());
 		}
 
 		public Task SetAsync(string key,
@@ -143,7 +143,7 @@ namespace vivego.Proto.PubSub.DistributedCache
 
 		public void Remove(string key)
 		{
-			_publishSubscribe.Publish(_removeTopic, key, key);
+			_publishSubscribe.Publish(_removeTopic, key);
 		}
 
 		public Task RemoveAsync(string key, CancellationToken token = new CancellationToken())

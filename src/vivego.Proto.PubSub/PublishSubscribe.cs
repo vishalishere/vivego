@@ -8,10 +8,10 @@ using Microsoft.Extensions.Logging;
 
 using Proto;
 using Proto.Remote;
+using Proto.Router;
 
 using vivego.core;
 using vivego.Proto.PubSub.Messages;
-using vivego.Proto.PubSub.Route;
 using vivego.Proto.PubSub.Topic;
 using vivego.Serializer.Abstractions;
 
@@ -29,7 +29,7 @@ namespace vivego.Proto.PubSub
 
 		public PublishSubscribe(string clusterName,
 			ISerializer<byte[]> serializer,
-			ILoggerFactory loggerFactory) : this(clusterName, serializer, loggerFactory, new HashByRouteSelector(), subscription => new DefaultTopicFilter(subscription))
+			ILoggerFactory loggerFactory) : this(clusterName, serializer, loggerFactory, subscription => new DefaultTopicFilter(subscription))
 		{
 		}
 
@@ -37,27 +37,27 @@ namespace vivego.Proto.PubSub
 			string clusterName,
 			ISerializer<byte[]> serializer,
 			ILoggerFactory loggerFactory,
-			IRouteSelector routeSelector,
 			Func<Subscription, ITopicFilter> topicFilterFactory)
 		{
-			_localRouter = new PublishSubscribeRouterActor(clusterName, loggerFactory, routeSelector, topicFilterFactory).PubSubRouterActorPid;
+			_localRouter = new PublishSubscribeRouterActor(clusterName, loggerFactory, topicFilterFactory).PubSubRouterActorPid;
 			_serializer = serializer;
 
 			RegisterDisposable(new AnonymousDisposable(() => _localRouter.Stop()));
 		}
 
-		public void Publish<T>(string topic, T t, string hashBy = null)
+		public void Publish<T>(string topic, T t)
 		{
 			byte[] serialized = _serializer.Serialize(t);
-			_localRouter.Tell(new Message
+			Message message = new Message
 			{
 				Topic = topic,
-				HashBy = hashBy ?? string.Empty,
-				Data = ByteString.CopyFrom(serialized)
-			});
+				Data = ByteString.CopyFrom(serialized),
+				HashBy = t is IHashable hashable ? hashable.HashBy() : string.Empty
+			};
+			_localRouter.Tell(message);
 		}
 
-		public IObservable<(string Topic, T Data)> Observe<T>(string topic, string group = null)
+		public IObservable<(string Topic, T Data)> Observe<T>(string topic, string group = null, bool hashBy = false)
 		{
 			if (string.IsNullOrEmpty(topic))
 			{
@@ -86,7 +86,8 @@ namespace vivego.Proto.PubSub
 				{
 					Topic = topic,
 					Group = group ?? string.Empty,
-					PID = self
+					PID = self,
+					HashBy = hashBy
 				});
 				return new AnonymousDisposable(() => { self.Stop(); });
 			});

@@ -9,11 +9,12 @@ package vivego.Proto.PubSub;
 message Subscription {
 	string Topic = 1;
 	string Group = 2;
-	actor.PID PID = 3;
+	bool HashBy = 3;
+	actor.PID PID = 4;
 }
 
 message Message {
 	string Topic = 1;
-	string HashBy = 2;
-	bytes Data = 3;
+	bytes Data = 2;
+	string HashBy = 3;
 }

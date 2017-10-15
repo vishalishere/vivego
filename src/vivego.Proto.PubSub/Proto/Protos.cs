@@ -23,15 +23,15 @@ namespace vivego.Proto.PubSub.Messages {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "CgxQcm90b3MucHJvdG8SE3ZpdmVnby5Qcm90by5QdWJTdWIaFlJlZmVyZW5j",
-            "ZS9Qcm90b3MucHJvdG8iRQoMU3Vic2NyaXB0aW9uEg0KBVRvcGljGAEgASgJ",
-            "Eg0KBUdyb3VwGAIgASgJEhcKA1BJRBgDIAEoCzIKLmFjdG9yLlBJRCI2CgdN",
-            "ZXNzYWdlEg0KBVRvcGljGAEgASgJEgwKBERhdGEYAiABKAwSDgoGSGFzaEJ5",
-            "GAMgASgJQh+qAhx2aXZlZ28uUHJvdG8uUHViU3ViLk1lc3NhZ2VzYgZwcm90",
-            "bzM="));
+            "ZS9Qcm90b3MucHJvdG8iVQoMU3Vic2NyaXB0aW9uEg0KBVRvcGljGAEgASgJ",
+            "Eg0KBUdyb3VwGAIgASgJEg4KBkhhc2hCeRgDIAEoCBIXCgNQSUQYBCABKAsy",
+            "Ci5hY3Rvci5QSUQiNgoHTWVzc2FnZRINCgVUb3BpYxgBIAEoCRIMCgREYXRh",
+            "GAIgASgMEg4KBkhhc2hCeRgDIAEoCUIfqgIcdml2ZWdvLlByb3RvLlB1YlN1",
+            "Yi5NZXNzYWdlc2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Proto.ProtosReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::vivego.Proto.PubSub.Messages.Subscription), global::vivego.Proto.PubSub.Messages.Subscription.Parser, new[]{ "Topic", "Group", "PID" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::vivego.Proto.PubSub.Messages.Subscription), global::vivego.Proto.PubSub.Messages.Subscription.Parser, new[]{ "Topic", "Group", "HashBy", "PID" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::vivego.Proto.PubSub.Messages.Message), global::vivego.Proto.PubSub.Messages.Message.Parser, new[]{ "Topic", "Data", "HashBy" }, null, null, null)
           }));
     }
@@ -65,6 +65,7 @@ namespace vivego.Proto.PubSub.Messages {
     public Subscription(Subscription other) : this() {
       topic_ = other.topic_;
       group_ = other.group_;
+      hashBy_ = other.hashBy_;
       PID = other.pID_ != null ? other.PID.Clone() : null;
     }
 
@@ -95,8 +96,19 @@ namespace vivego.Proto.PubSub.Messages {
       }
     }
 
+    /// <summary>Field number for the "HashBy" field.</summary>
+    public const int HashByFieldNumber = 3;
+    private bool hashBy_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool HashBy {
+      get { return hashBy_; }
+      set {
+        hashBy_ = value;
+      }
+    }
+
     /// <summary>Field number for the "PID" field.</summary>
-    public const int PIDFieldNumber = 3;
+    public const int PIDFieldNumber = 4;
     private global::Proto.PID pID_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Proto.PID PID {
@@ -121,6 +133,7 @@ namespace vivego.Proto.PubSub.Messages {
       }
       if (Topic != other.Topic) return false;
       if (Group != other.Group) return false;
+      if (HashBy != other.HashBy) return false;
       if (!object.Equals(PID, other.PID)) return false;
       return true;
     }
@@ -130,6 +143,7 @@ namespace vivego.Proto.PubSub.Messages {
       int hash = 1;
       if (Topic.Length != 0) hash ^= Topic.GetHashCode();
       if (Group.Length != 0) hash ^= Group.GetHashCode();
+      if (HashBy != false) hash ^= HashBy.GetHashCode();
       if (pID_ != null) hash ^= PID.GetHashCode();
       return hash;
     }
@@ -149,8 +163,12 @@ namespace vivego.Proto.PubSub.Messages {
         output.WriteRawTag(18);
         output.WriteString(Group);
       }
+      if (HashBy != false) {
+        output.WriteRawTag(24);
+        output.WriteBool(HashBy);
+      }
       if (pID_ != null) {
-        output.WriteRawTag(26);
+        output.WriteRawTag(34);
         output.WriteMessage(PID);
       }
     }
@@ -163,6 +181,9 @@ namespace vivego.Proto.PubSub.Messages {
       }
       if (Group.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Group);
+      }
+      if (HashBy != false) {
+        size += 1 + 1;
       }
       if (pID_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(PID);
@@ -180,6 +201,9 @@ namespace vivego.Proto.PubSub.Messages {
       }
       if (other.Group.Length != 0) {
         Group = other.Group;
+      }
+      if (other.HashBy != false) {
+        HashBy = other.HashBy;
       }
       if (other.pID_ != null) {
         if (pID_ == null) {
@@ -205,7 +229,11 @@ namespace vivego.Proto.PubSub.Messages {
             Group = input.ReadString();
             break;
           }
-          case 26: {
+          case 24: {
+            HashBy = input.ReadBool();
+            break;
+          }
+          case 34: {
             if (pID_ == null) {
               pID_ = new global::Proto.PID();
             }
