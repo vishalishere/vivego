@@ -1,0 +1,15 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "vivego.Proto.PubSub.DistributedCache";
+
+package vivego.Proto.PubSub.DistributedCache;
+
+message CacheRequest {
+	string Key = 1;
+	string TopicResponse = 2;
+}
+
+message CacheEntry {
+	string Key = 1;
+	bytes Value = 2;
+}

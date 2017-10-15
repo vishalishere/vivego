@@ -17,6 +17,11 @@ namespace vivego.Proto.PubSub.Route
 				return base.Select(message, group, pids);
 			}
 
+			if (pids.Length == 1)
+			{
+				return pids[0].AsEnumerable();
+			}
+
 			uint next = MD5Hasher.Hash(message.HashBy);
 			return pids[next % pids.Length].AsEnumerable();
 		}

@@ -25,6 +25,11 @@ namespace vivego.Proto.PubSub.Route
 				_counters.Add(group, counter);
 			}
 
+			if (pids.Length == 1)
+			{
+				return pids[0].AsEnumerable();
+			}
+
 			int next = counter.Next();
 			return pids[next % pids.Length].AsEnumerable();
 		}

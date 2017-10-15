@@ -6,8 +6,10 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Reactive.Linq;
+using System.Text;
 using System.Threading;
 
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 
 using Proto;
@@ -18,8 +20,10 @@ using vivego.Discovery.Abstactions;
 using vivego.Discovery.DotNetty;
 using vivego.Proto.ClusterProvider;
 using vivego.Proto.PubSub;
+using vivego.Proto.PubSub.DistributedCache;
 using vivego.Serializer.Abstractions;
 using vivego.Serializer.MessagePack;
+using vivego.Serializer.Wire;
 
 namespace ProtoBroker.Playground
 {
@@ -118,7 +122,21 @@ namespace ProtoBroker.Playground
 		{
 			long counter = 0;
 			IPublishSubscribe publishSubscribe1 = PubSubAutoConfig.Auto("unique1");
+
+			IDistributedCache cache = new PublishSubscribeDistributedCache("a", publishSubscribe1);
+			cache.Set("abe", Encoding.UTF8.GetBytes("kat"), new DistributedCacheEntryOptions());
+
+			cache.Get("abe");
+
 			Stopwatch sw = Stopwatch.StartNew();
+			foreach (int i in Enumerable.Range(0, 1000000))
+			{
+				var value = cache.Get("abe");
+			}
+
+			sw.Stop();
+			Console.Out.WriteLine(1000000 / sw.Elapsed.TotalSeconds);
+
 			using (publishSubscribe1
 				.Observe<string>("*", "groupa")
 				.Subscribe(_ =>

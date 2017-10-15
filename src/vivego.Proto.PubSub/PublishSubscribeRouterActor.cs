@@ -59,8 +59,9 @@ namespace vivego.Proto.PubSub
 
 		public PID PubSubRouterActorPid { get; }
 
-		private PID[] Lookup(string cacheKey, Message message, Dictionary<PID, (ITopicFilter TopicFilter, Subscription subscription)> subscriptions)
+		private PID[] Lookup(string group, Message message, Dictionary<PID, (ITopicFilter TopicFilter, Subscription subscription)> subscriptions)
 		{
+			string cacheKey = $"{group}_{message.Topic}";
 			if (!_lookupCache.TryGetValue(cacheKey, out PID[] cachedSubscriptions))
 			{
 				cachedSubscriptions = subscriptions
