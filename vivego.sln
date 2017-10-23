@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2002
+VisualStudioVersion = 15.0.27004.2005
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.Discovery.Abstactions", "src\vivego.Discovery\vivego.Discovery.Abstactions.csproj", "{8898E2F4-047B-401A-933F-F3954CAC6904}"
 EndProject
@@ -49,7 +49,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.Orleans.Playground",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.SerializerTests", "test\vivego.SerializerTests\vivego.SerializerTests.csproj", "{38B447F9-7FE8-4CCC-BA22-9D7A7C597B4C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vivego.Proto.PubSub.DistributedCache", "src\vivego.Proto.PubSub.DistributedCache\vivego.Proto.PubSub.DistributedCache.csproj", "{ABD0C6D9-0384-41D8-8F2C-2A2964D8E112}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.Proto.PubSub.DistributedCache", "src\vivego.Proto.PubSub.DistributedCache\vivego.Proto.PubSub.DistributedCache.csproj", "{ABD0C6D9-0384-41D8-8F2C-2A2964D8E112}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.SignalR.Proto.PubSub", "src\vivego.SignalR.Proto.PubSub\vivego.SignalR.Proto.PubSub.csproj", "{67230678-C8CD-4C64-8FF0-FE3D103D838E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vivego.PublishSubscribe", "sec\vivego.PublishSubscribe\vivego.PublishSubscribe.csproj", "{70321C89-1CC5-41E7-A10B-CAC644324D27}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -125,6 +129,14 @@ Global
 		{ABD0C6D9-0384-41D8-8F2C-2A2964D8E112}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ABD0C6D9-0384-41D8-8F2C-2A2964D8E112}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ABD0C6D9-0384-41D8-8F2C-2A2964D8E112}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67230678-C8CD-4C64-8FF0-FE3D103D838E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67230678-C8CD-4C64-8FF0-FE3D103D838E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67230678-C8CD-4C64-8FF0-FE3D103D838E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67230678-C8CD-4C64-8FF0-FE3D103D838E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70321C89-1CC5-41E7-A10B-CAC644324D27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70321C89-1CC5-41E7-A10B-CAC644324D27}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70321C89-1CC5-41E7-A10B-CAC644324D27}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70321C89-1CC5-41E7-A10B-CAC644324D27}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

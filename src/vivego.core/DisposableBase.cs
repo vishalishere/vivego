@@ -25,7 +25,7 @@ namespace vivego.core
 				_lazyCancellationTokenSource.Value.Dispose();
 			}
 
-			while(_disposables.TryPop(out IDisposable disposable))
+			while (_disposables.TryPop(out IDisposable disposable))
 			{
 				disposable.Dispose();
 			}

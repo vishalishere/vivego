@@ -9,10 +9,14 @@ using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Grpc.Core;
+
 using Microsoft.Extensions.Logging;
 
 using Proto;
 using Proto.Cluster;
+using Proto.Cluster.Consul;
+using Proto.Remote;
 using Proto.Router;
 
 using vivego.core;
@@ -27,7 +31,7 @@ namespace ProtoBroker.Playground
 {
 	public class PubSubAutoConfig
 	{
-		private static IEnumerable<IPAddress> GetMyIpAddress()
+		public static IEnumerable<IPAddress> GetMyIpAddress()
 		{
 			foreach (NetworkInterface allNetworkInterface in NetworkInterface.GetAllNetworkInterfaces())
 			{
@@ -89,7 +93,7 @@ namespace ProtoBroker.Playground
 				//new IPEndPoint(ipAddress, 35103)B
 			};
 
-			ILoggerFactory loggerFactory = new LoggerFactory().AddConsole(LogLevel.Warning);
+			ILoggerFactory loggerFactory = new LoggerFactory().AddConsole(LogLevel.Debug);
 			Log.SetLoggerFactory(loggerFactory);
 
 			//loggerFactory
@@ -99,11 +103,6 @@ namespace ProtoBroker.Playground
 			ISerializer<byte[]> serializer = new MessagePackSerializer();
 			IPublishSubscribe pubSub = new PublishSubscribe(clusterId, serializer, loggerFactory);
 
-			if (!clusterIsStarted)
-			{
-				clusterIsStarted = true;
-				Cluster.Start(clusterId, ipAddress.ToString(), serverPort, new SeededLocalClusterProvider(Observable.Return(seedsEndpoints)));
-			}
 			//Cluster.Start(clusterId, ipAddress.ToString(), serverPort, new ConsulProvider(new ConsulProviderOptions
 			//{
 			//	ServiceTtl = TimeSpan.FromSeconds(5),
@@ -164,33 +163,149 @@ namespace ProtoBroker.Playground
 		}
 	}
 
+	public class DirectoryMicroService<T, TKey> : DisposableBase
+	{
+		public DirectoryMicroService(IPublishSubscribe publishSubscribe,
+			Func<T, TKey> group)
+		{
+			publishSubscribe
+				.Observe<T>("AgentPresence", hashBy: true)
+				.GroupBy(_ => group(_.Data))
+				.Subscribe(groupedObservable =>
+				{
+					TKey groupId = groupedObservable.Key;
+					// Read initial state for group
+					groupedObservable.Subscribe(tuple =>
+					{
+						T t = tuple.Data;
+					}, CancellationToken);
+				}, CancellationToken);
+		}
+	}
+
+	public abstract class SingletonMicroService<T> : DisposableBase
+	{
+		private readonly string _topic;
+		private readonly IPublishSubscribe _publishSubscribe;
+
+		protected SingletonMicroService(string topic, IPublishSubscribe publishSubscribe)
+		{
+			_topic = topic;
+			_publishSubscribe = publishSubscribe;
+			publishSubscribe
+				.Observe<SingletonHashMessage<T>>(topic, hashBy: true)
+				.Subscribe(tuple => Process(tuple.Data.Value), CancellationToken);
+		}
+
+		protected abstract void Process(T t);
+
+		public void Update(T t)
+		{
+			_publishSubscribe.Publish(_topic, new SingletonHashMessage<T>
+			{
+				Value = t
+			});
+		}
+	}
+
+	public class SingletonHashMessage<T> : IHashable
+	{
+		public T Value { get; set; }
+
+		public string HashBy()
+		{
+			return "0";
+		}
+	}
+
+	[DataContract(Name = "session")]
+	public class Session
+	{
+		[DataMember(Name = "id")]
+		public Guid Id { get; set; }
+	}
+
+	public class SessionActor : IActor
+	{
+		public async Task ReceiveAsync(IContext context)
+		{
+			switch (context.Message)
+			{
+				case Guid g:
+					Console.Out.WriteLine("Got guid");
+					//(PID, ResponseStatusCode) tuple = await Cluster.GetAsync("SessionList", "SessionList");
+					//if (tuple.Item2 == ResponseStatusCode.OK)
+					//{
+					//	tuple.Item1.Tell(new Session
+					//	{
+					//		Id = g
+					//	});
+					//}
+
+					break;
+			}
+		}
+	}
+
+	public class SessionsActor : IActor
+	{
+		private readonly IPublishSubscribe _publishSubscribe;
+		List<Session> _sessions = new List<Session>();
+
+		public SessionsActor(IPublishSubscribe publishSubscribe)
+		{
+			_publishSubscribe = publishSubscribe;
+		}
+
+		public Task ReceiveAsync(IContext context)
+		{
+			switch (context.Message)
+			{
+				case Session session:
+					Console.Out.WriteLine("Got session");
+					_sessions.Add(session);
+					_publishSubscribe.Publish("Sessions", _sessions);
+					break;
+			}
+
+			return Task.CompletedTask;
+		}
+	}
+
 	public class EntryPoint
 	{
-		public static void Main(string[] args)
+		public static async Task Main(string[] args)
 		{
 			long counter = 0;
-			long hashByCounter = 0;
-			IPublishSubscribe publishSubscribe1 = PubSubAutoConfig.Auto("unique1");
+			ISerializer<byte[]> serializer = new MessagePackSerializer();
+			ILoggerFactory loggerFactory = new LoggerFactory().AddConsole(LogLevel.Debug);
+
+			IPAddress ipAddress = PubSubAutoConfig.GetMyIpAddress().First();
+			int serverPort = PortUtils.FindAvailablePortIncrementally(35100);
+			IPEndPoint[] seedsEndpoints = { new IPEndPoint(ipAddress, 35100), new IPEndPoint(ipAddress, serverPort), new IPEndPoint(ipAddress, serverPort + 1) };
+
+			//IPublishSubscribe publishSubscribe1 = PubSubAutoConfig.Auto("unique1");
+			var publishSubscribe1 = new vivego.PublishSubscribe.PublishSubscribe(serverPort, loggerFactory, serializer);
 			using (publishSubscribe1
-				.Observe<object>("*", hashBy: true)
-				.Subscribe(_ =>
-				{
-					long c = Interlocked.Increment(ref hashByCounter);
-					Console.Out.WriteLine("hash: " + c);
-				}))
-			using (publishSubscribe1
-				.Observe<object>("*", hashBy: false)
+				.Observe<object>("*")
 				.Subscribe(_ =>
 				{
 					long c = Interlocked.Increment(ref counter);
-					Console.Out.WriteLine(c);
+					//Console.Out.WriteLine(_);
+					if (c % 1000 == 0)
+					{
+						Console.Out.WriteLine(c);
+					}
 				}))
 			{
-				Console.ReadLine();
 				while (true)
 				{
-					publishSubscribe1.Publish("a", new Test());
-					Thread.Sleep(1000);
+					Console.Out.WriteLine("ready");
+					Console.ReadLine();
+					foreach (int i in Enumerable.Range(0, 100000000))
+					{
+						publishSubscribe1.Publish("Hello", "World");
+					}
 				}
 			}
 		}

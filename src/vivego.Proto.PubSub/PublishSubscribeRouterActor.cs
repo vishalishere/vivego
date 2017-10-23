@@ -17,7 +17,7 @@ using vivego.Proto.PubSub.Topic;
 
 namespace vivego.Proto.PubSub
 {
-	internal class PublishSubscribeRouterActor : DisposableBase
+	public class PublishSubscribeRouterActor : DisposableBase
 	{
 		private readonly Func<Subscription, ITopicFilter> _topicFilterFactory;
 		private readonly ILogger<PublishSubscribeRouterActor> _logger;

@@ -1,0 +1,25 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "vivego.PublishSubscribe";
+
+package vivego.Proto.PubSub;
+
+message Subscription {
+	string Topic = 1;
+	string Group = 2;
+	bool HashBy = 3;
+}
+
+message Message {
+	string Topic = 1;
+	bytes Data = 2;
+	uint32 Hash = 3;
+}
+
+message Empty {
+}
+
+service PubSubService {
+	rpc Publish (stream Message) returns (Empty) {}
+	rpc Listen (Subscription) returns (stream Message) {}
+}
