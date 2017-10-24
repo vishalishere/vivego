@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Reactive.Linq;
 
 using vivego.core;
@@ -7,6 +8,7 @@ using vivego.Proto.PubSub;
 
 using WampSharp.V2.Core;
 using WampSharp.V2.Core.Contracts;
+using WampSharp.V2.PubSub;
 using WampSharp.V2.Realm;
 
 namespace vivego.WampSharp.Proto.SubPub.Backplane
@@ -16,17 +18,29 @@ namespace vivego.WampSharp.Proto.SubPub.Backplane
 		public static IDisposable EnableDistributedBackplane(this IWampHostedRealm realm,
 			IPublishSubscribe publishSubscribe)
 		{
-			ConcurrentStack<IDisposable> disposables = new ConcurrentStack<IDisposable>();
+			ConcurrentDictionary<string, IDisposable> disposables = new ConcurrentDictionary<string, IDisposable>();
 
 			AtomicBoolean disableInternalPublishAtomicBoolean = new AtomicBoolean();
 			string forwarderPubSubTopic = $"DistributedRealm_{realm.Name}";
-			string selfId = System.Diagnostics.Process.GetCurrentProcess().Id + "_" + Environment.MachineName;
-			realm.TopicContainer.TopicCreated += (sender, args) =>
+			string selfId = $"{System.Diagnostics.Process.GetCurrentProcess().Id}_{Environment.MachineName}";
+
+			void TopicCreated(object sender, WampTopicCreatedEventArgs args)
 			{
 				IDisposable subscription = args.Topic
 					.Subscribe(new PubSubForwarderWampRawTopicRouterSubscriber(selfId, forwarderPubSubTopic, args.Topic, publishSubscribe, disableInternalPublishAtomicBoolean));
-				disposables.Push(subscription);
-			};
+				disposables.TryAdd(args.Topic.TopicUri, subscription);
+			}
+
+			void TopicRemoved(object sender, WampTopicRemovedEventArgs args)
+			{
+				if (disposables.TryGetValue(args.Topic.TopicUri, out IDisposable subscription))
+				{
+					subscription.Dispose();
+				}
+			}
+
+			realm.TopicContainer.TopicCreated += TopicCreated;
+			realm.TopicContainer.TopicRemoved += TopicRemoved;
 
 			PublishOptions defaultPublishOptions = new PublishOptions();
 			IDisposable pubSubSubscription = publishSubscribe
@@ -66,12 +80,15 @@ namespace vivego.WampSharp.Proto.SubPub.Backplane
 						disableInternalPublishAtomicBoolean.TrueToFalse();
 					}
 				});
-			disposables.Push(pubSubSubscription);
+
 			return new AnonymousDisposable(() =>
 			{
-				while (disposables.TryPop(out IDisposable disposable))
+				pubSubSubscription.Dispose();
+				realm.TopicContainer.TopicCreated -= TopicCreated;
+				realm.TopicContainer.TopicRemoved -= TopicRemoved;
+				foreach (KeyValuePair<string, IDisposable> pair in disposables)
 				{
-					disposable.Dispose();
+					pair.Value.Dispose();
 				}
 			});
 		}
