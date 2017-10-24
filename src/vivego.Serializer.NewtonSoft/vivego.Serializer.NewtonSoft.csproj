@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netcoreapp2.0</TargetFramework>
+		<LangVersion>7.1</LangVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+		<PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\vivego.Serializer.Abstractions\vivego.Serializer.Abstractions.csproj" />
+	</ItemGroup>
+
+</Project>
