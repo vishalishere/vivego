@@ -69,6 +69,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Discovery", "Discovery", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WAMP", "WAMP", "{06E60385-23BB-410E-A26C-A996A1A2C8F0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vivego.Discovery.Dns", "src\vivego.Discovery.Dns\vivego.Discovery.Dns.csproj", "{3BDE2AFF-510B-44AE-9A7E-A1D9BAB51530}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -155,6 +157,10 @@ Global
 		{7403BF71-F40D-4429-99CC-7837E55791D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7403BF71-F40D-4429-99CC-7837E55791D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7403BF71-F40D-4429-99CC-7837E55791D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BDE2AFF-510B-44AE-9A7E-A1D9BAB51530}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BDE2AFF-510B-44AE-9A7E-A1D9BAB51530}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BDE2AFF-510B-44AE-9A7E-A1D9BAB51530}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BDE2AFF-510B-44AE-9A7E-A1D9BAB51530}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -179,6 +185,7 @@ Global
 		{67230678-C8CD-4C64-8FF0-FE3D103D838E} = {43D36B23-3372-4793-B97B-BB161BFB019B}
 		{70321C89-1CC5-41E7-A10B-CAC644324D27} = {103AF6D6-AAE9-4E48-83A1-ECB16E82A897}
 		{7403BF71-F40D-4429-99CC-7837E55791D2} = {401B6E82-1192-4695-8A8F-36D3DE0BDA73}
+		{3BDE2AFF-510B-44AE-9A7E-A1D9BAB51530} = {5FC48955-31D8-4E78-BDCC-B6CB5E6F941B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {70692A79-59D4-47A2-A406-C5C9EEC32B93}
