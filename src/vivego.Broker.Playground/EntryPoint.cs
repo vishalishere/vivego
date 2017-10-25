@@ -276,6 +276,14 @@ namespace ProtoBroker.Playground
 	{
 		public static async Task Main(string[] args)
 		{
+			vivego.Discovery.Udp.UdpDiscoverClientFactory udpDiscoverClientFactory = new vivego.Discovery.Udp.UdpDiscoverClientFactory("a", 55551, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+			udpDiscoverClientFactory
+				.MakeObservable()
+				.Subscribe(ipEndPoints =>
+				{
+					Console.Out.WriteLine(ipEndPoints.Select(x => x.ToString()).Join(";"));
+				});
+
 			long counter = 0;
 			ISerializer<byte[]> serializer = new MessagePackSerializer();
 			ILoggerFactory loggerFactory = new LoggerFactory().AddConsole(LogLevel.Debug);
