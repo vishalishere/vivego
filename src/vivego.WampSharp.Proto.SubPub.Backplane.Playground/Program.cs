@@ -88,7 +88,7 @@ namespace vivego.WampSharp.Proto.SubPub.Backplane.Playground
 			//	.LogDebug("Discovered endpoints: {0}", string.Join(";", seedsEndpoints.Select(endPoint => endPoint.ToString())));
 			ISerializer<byte[]> serializer = new MessagePackSerializer();
 			Cluster.Start(realm.Name, ipAddress.ToString(), serverPort, new SeededLocalClusterProvider(Observable.Return(seedsEndpoints)));
-			IPublishSubscribe pubSub = new PublishSubscribe(realm.Name, serializer, loggerFactory);
+			IPublishSubscribe pubSub = new vivego.Proto.PubSub.PublishSubscribe(realm.Name, serializer, loggerFactory);
 			return realm.EnableDistributedBackplane(pubSub);
 		}
 

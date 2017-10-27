@@ -20,8 +20,11 @@ namespace vivego.PublishSubscribe
 		private readonly PublishSubscribeServerRouter _publishSubscribeServerRouter;
 		private readonly PubSubService.PubSubServiceClient _pubSubServiceClient;
 		private readonly ISerializer<byte[]> _serializer;
+		private readonly ActionBlock<Message> _writer;
+		private readonly IClientStreamWriter<Message> _clientStreamWriter;
 
 		public PublishSubscribe(
+			string address,
 			int port,
 			ILoggerFactory loggerFactory,
 			ISerializer<byte[]> serializer)
@@ -33,7 +36,7 @@ namespace vivego.PublishSubscribe
 			Server server = new Server
 			{
 				Services = {PubSubService.BindService(_publishSubscribeServerRouter)},
-				Ports = {new ServerPort("extremepc", port, ServerCredentials.Insecure)}
+				Ports = {new ServerPort(address, port, ServerCredentials.Insecure)}
 			};
 			server.Start();
 
@@ -47,17 +50,17 @@ namespace vivego.PublishSubscribe
 					new PubSubService.PubSubServiceClient(new Channel(serverPort.Host, serverPort.Port, ChannelCredentials.Insecure));
 			}
 
-			var rs = _pubSubServiceClient.Publish().RequestStream;
-			_writer = new ActionBlock<Message>(message => rs.WriteAsync(message), new ExecutionDataflowBlockOptions
-			{
-				MaxDegreeOfParallelism = 1
-			});
+			_clientStreamWriter = _pubSubServiceClient.Publish().RequestStream;
+			_writer = new ActionBlock<Message>(message => _clientStreamWriter.WriteAsync(message),
+				new ExecutionDataflowBlockOptions
+				{
+					MaxDegreeOfParallelism = 1
+				});
 		}
-
-		private readonly ActionBlock<Message> _writer;
 
 		public void Dispose()
 		{
+			_clientStreamWriter.CompleteAsync().Wait();
 			_publishSubscribeServerRouter?.Dispose();
 		}
 
@@ -66,10 +69,8 @@ namespace vivego.PublishSubscribe
 			Message message = new Message
 			{
 				Topic = topic,
-				Data = ByteString.CopyFrom(_serializer.Serialize(t)),
-				Hash = 0
+				Data = ByteString.CopyFrom(_serializer.Serialize(t))
 			};
-			//_pubSubServiceClient.Publish(message);
 			_writer.Post(message);
 		}
 
@@ -92,7 +93,12 @@ namespace vivego.PublishSubscribe
 							T t = _serializer.Deserialize<T>(message.Data.ToByteArray());
 							observer.OnNext((message.Topic, t));
 							return Task.CompletedTask;
-						}).ConfigureAwait(false);
+						})
+						.ConfigureAwait(false);
+					observer.OnCompleted();
+				}
+				catch (OperationCanceledException)
+				{
 					observer.OnCompleted();
 				}
 				catch (Exception e)

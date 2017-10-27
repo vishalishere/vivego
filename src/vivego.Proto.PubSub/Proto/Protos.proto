@@ -3,18 +3,11 @@
 option csharp_namespace = "vivego.Proto.PubSub.Messages";
 
 import "Reference/Protos.proto";
+import "vivego.PublishSubscribe/Proto/Protos.proto";
 
 package vivego.Proto.PubSub;
 
-message Subscription {
-	string Topic = 1;
-	string Group = 2;
-	bool HashBy = 3;
-	actor.PID PID = 4;
-}
-
-message Message {
-	string Topic = 1;
-	bytes Data = 2;
-	string HashBy = 3;
+message ProtoSubscription {
+	Subscription Subscription = 1;
+	actor.PID PID = 2;
 }

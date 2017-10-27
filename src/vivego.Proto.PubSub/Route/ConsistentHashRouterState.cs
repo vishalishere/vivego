@@ -6,6 +6,7 @@ using Proto.Router;
 using Proto.Router.Routers;
 
 using vivego.Proto.PubSub.Messages;
+using vivego.PublishSubscribe;
 
 namespace vivego.Proto.PubSub.Route
 {
@@ -46,7 +47,7 @@ namespace vivego.Proto.PubSub.Route
 			(object message, PID sender, MessageHeader headers) env = MessageEnvelope.Unwrap(message);
 			if (env.message is Message message1)
 			{
-				string node = _hashRing.GetNode(message1.HashBy);
+				string node = _hashRing.GetNode("");//message1.HashBy);
 				PID routee = _routeeMap[node];
 				routee.Tell(message);
 			}

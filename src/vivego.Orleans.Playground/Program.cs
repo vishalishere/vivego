@@ -61,7 +61,7 @@ namespace vivego.Orleans.Playground
 		{
 			ILoggerFactory loggerFactory = new NullLoggerFactory();
 			ISerializer<byte[]> serializer = new MessagePackSerializer();
-			PublishSubscribe = new PublishSubscribe(clusterName, serializer, loggerFactory);
+			PublishSubscribe = new Proto.PubSub.PublishSubscribe(clusterName, serializer, loggerFactory);
 		}
 
 		public IServiceProvider ConfigureServices(IServiceCollection services)

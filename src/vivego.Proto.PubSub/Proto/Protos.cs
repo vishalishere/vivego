@@ -23,26 +23,25 @@ namespace vivego.Proto.PubSub.Messages {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "CgxQcm90b3MucHJvdG8SE3ZpdmVnby5Qcm90by5QdWJTdWIaFlJlZmVyZW5j",
-            "ZS9Qcm90b3MucHJvdG8iVQoMU3Vic2NyaXB0aW9uEg0KBVRvcGljGAEgASgJ",
-            "Eg0KBUdyb3VwGAIgASgJEg4KBkhhc2hCeRgDIAEoCBIXCgNQSUQYBCABKAsy",
-            "Ci5hY3Rvci5QSUQiNgoHTWVzc2FnZRINCgVUb3BpYxgBIAEoCRIMCgREYXRh",
-            "GAIgASgMEg4KBkhhc2hCeRgDIAEoCUIfqgIcdml2ZWdvLlByb3RvLlB1YlN1",
-            "Yi5NZXNzYWdlc2IGcHJvdG8z"));
+            "ZS9Qcm90b3MucHJvdG8aKnZpdmVnby5QdWJsaXNoU3Vic2NyaWJlL1Byb3Rv",
+            "L1Byb3Rvcy5wcm90byJlChFQcm90b1N1YnNjcmlwdGlvbhI3CgxTdWJzY3Jp",
+            "cHRpb24YASABKAsyIS52aXZlZ28uUHJvdG8uUHViU3ViLlN1YnNjcmlwdGlv",
+            "bhIXCgNQSUQYAiABKAsyCi5hY3Rvci5QSURCH6oCHHZpdmVnby5Qcm90by5Q",
+            "dWJTdWIuTWVzc2FnZXNiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Proto.ProtosReflection.Descriptor, },
+          new pbr::FileDescriptor[] { global::Proto.ProtosReflection.Descriptor, global::vivego.PublishSubscribe.ProtosReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::vivego.Proto.PubSub.Messages.Subscription), global::vivego.Proto.PubSub.Messages.Subscription.Parser, new[]{ "Topic", "Group", "HashBy", "PID" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::vivego.Proto.PubSub.Messages.Message), global::vivego.Proto.PubSub.Messages.Message.Parser, new[]{ "Topic", "Data", "HashBy" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::vivego.Proto.PubSub.Messages.ProtoSubscription), global::vivego.Proto.PubSub.Messages.ProtoSubscription.Parser, new[]{ "Subscription", "PID" }, null, null, null)
           }));
     }
     #endregion
 
   }
   #region Messages
-  public sealed partial class Subscription : pb::IMessage<Subscription> {
-    private static readonly pb::MessageParser<Subscription> _parser = new pb::MessageParser<Subscription>(() => new Subscription());
+  public sealed partial class ProtoSubscription : pb::IMessage<ProtoSubscription> {
+    private static readonly pb::MessageParser<ProtoSubscription> _parser = new pb::MessageParser<ProtoSubscription>(() => new ProtoSubscription());
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<Subscription> Parser { get { return _parser; } }
+    public static pb::MessageParser<ProtoSubscription> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
@@ -55,60 +54,36 @@ namespace vivego.Proto.PubSub.Messages {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public Subscription() {
+    public ProtoSubscription() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public Subscription(Subscription other) : this() {
-      topic_ = other.topic_;
-      group_ = other.group_;
-      hashBy_ = other.hashBy_;
+    public ProtoSubscription(ProtoSubscription other) : this() {
+      Subscription = other.subscription_ != null ? other.Subscription.Clone() : null;
       PID = other.pID_ != null ? other.PID.Clone() : null;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public Subscription Clone() {
-      return new Subscription(this);
+    public ProtoSubscription Clone() {
+      return new ProtoSubscription(this);
     }
 
-    /// <summary>Field number for the "Topic" field.</summary>
-    public const int TopicFieldNumber = 1;
-    private string topic_ = "";
+    /// <summary>Field number for the "Subscription" field.</summary>
+    public const int SubscriptionFieldNumber = 1;
+    private global::vivego.PublishSubscribe.Subscription subscription_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string Topic {
-      get { return topic_; }
+    public global::vivego.PublishSubscribe.Subscription Subscription {
+      get { return subscription_; }
       set {
-        topic_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-      }
-    }
-
-    /// <summary>Field number for the "Group" field.</summary>
-    public const int GroupFieldNumber = 2;
-    private string group_ = "";
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string Group {
-      get { return group_; }
-      set {
-        group_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-      }
-    }
-
-    /// <summary>Field number for the "HashBy" field.</summary>
-    public const int HashByFieldNumber = 3;
-    private bool hashBy_;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool HashBy {
-      get { return hashBy_; }
-      set {
-        hashBy_ = value;
+        subscription_ = value;
       }
     }
 
     /// <summary>Field number for the "PID" field.</summary>
-    public const int PIDFieldNumber = 4;
+    public const int PIDFieldNumber = 2;
     private global::Proto.PID pID_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Proto.PID PID {
@@ -120,20 +95,18 @@ namespace vivego.Proto.PubSub.Messages {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
-      return Equals(other as Subscription);
+      return Equals(other as ProtoSubscription);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(Subscription other) {
+    public bool Equals(ProtoSubscription other) {
       if (ReferenceEquals(other, null)) {
         return false;
       }
       if (ReferenceEquals(other, this)) {
         return true;
       }
-      if (Topic != other.Topic) return false;
-      if (Group != other.Group) return false;
-      if (HashBy != other.HashBy) return false;
+      if (!object.Equals(Subscription, other.Subscription)) return false;
       if (!object.Equals(PID, other.PID)) return false;
       return true;
     }
@@ -141,9 +114,7 @@ namespace vivego.Proto.PubSub.Messages {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
-      if (Topic.Length != 0) hash ^= Topic.GetHashCode();
-      if (Group.Length != 0) hash ^= Group.GetHashCode();
-      if (HashBy != false) hash ^= HashBy.GetHashCode();
+      if (subscription_ != null) hash ^= Subscription.GetHashCode();
       if (pID_ != null) hash ^= PID.GetHashCode();
       return hash;
     }
@@ -155,20 +126,12 @@ namespace vivego.Proto.PubSub.Messages {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Topic.Length != 0) {
+      if (subscription_ != null) {
         output.WriteRawTag(10);
-        output.WriteString(Topic);
-      }
-      if (Group.Length != 0) {
-        output.WriteRawTag(18);
-        output.WriteString(Group);
-      }
-      if (HashBy != false) {
-        output.WriteRawTag(24);
-        output.WriteBool(HashBy);
+        output.WriteMessage(Subscription);
       }
       if (pID_ != null) {
-        output.WriteRawTag(34);
+        output.WriteRawTag(18);
         output.WriteMessage(PID);
       }
     }
@@ -176,14 +139,8 @@ namespace vivego.Proto.PubSub.Messages {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
-      if (Topic.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(Topic);
-      }
-      if (Group.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(Group);
-      }
-      if (HashBy != false) {
-        size += 1 + 1;
+      if (subscription_ != null) {
+        size += 1 + pb::CodedOutputStream.ComputeMessageSize(Subscription);
       }
       if (pID_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(PID);
@@ -192,18 +149,15 @@ namespace vivego.Proto.PubSub.Messages {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(Subscription other) {
+    public void MergeFrom(ProtoSubscription other) {
       if (other == null) {
         return;
       }
-      if (other.Topic.Length != 0) {
-        Topic = other.Topic;
-      }
-      if (other.Group.Length != 0) {
-        Group = other.Group;
-      }
-      if (other.HashBy != false) {
-        HashBy = other.HashBy;
+      if (other.subscription_ != null) {
+        if (subscription_ == null) {
+          subscription_ = new global::vivego.PublishSubscribe.Subscription();
+        }
+        Subscription.MergeFrom(other.Subscription);
       }
       if (other.pID_ != null) {
         if (pID_ == null) {
@@ -222,195 +176,17 @@ namespace vivego.Proto.PubSub.Messages {
             input.SkipLastField();
             break;
           case 10: {
-            Topic = input.ReadString();
+            if (subscription_ == null) {
+              subscription_ = new global::vivego.PublishSubscribe.Subscription();
+            }
+            input.ReadMessage(subscription_);
             break;
           }
           case 18: {
-            Group = input.ReadString();
-            break;
-          }
-          case 24: {
-            HashBy = input.ReadBool();
-            break;
-          }
-          case 34: {
             if (pID_ == null) {
               pID_ = new global::Proto.PID();
             }
             input.ReadMessage(pID_);
-            break;
-          }
-        }
-      }
-    }
-
-  }
-
-  public sealed partial class Message : pb::IMessage<Message> {
-    private static readonly pb::MessageParser<Message> _parser = new pb::MessageParser<Message>(() => new Message());
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pb::MessageParser<Message> Parser { get { return _parser; } }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public static pbr::MessageDescriptor Descriptor {
-      get { return global::vivego.Proto.PubSub.Messages.ProtosReflection.Descriptor.MessageTypes[1]; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    pbr::MessageDescriptor pb::IMessage.Descriptor {
-      get { return Descriptor; }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public Message() {
-      OnConstruction();
-    }
-
-    partial void OnConstruction();
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public Message(Message other) : this() {
-      topic_ = other.topic_;
-      data_ = other.data_;
-      hashBy_ = other.hashBy_;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public Message Clone() {
-      return new Message(this);
-    }
-
-    /// <summary>Field number for the "Topic" field.</summary>
-    public const int TopicFieldNumber = 1;
-    private string topic_ = "";
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string Topic {
-      get { return topic_; }
-      set {
-        topic_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-      }
-    }
-
-    /// <summary>Field number for the "Data" field.</summary>
-    public const int DataFieldNumber = 2;
-    private pb::ByteString data_ = pb::ByteString.Empty;
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pb::ByteString Data {
-      get { return data_; }
-      set {
-        data_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-      }
-    }
-
-    /// <summary>Field number for the "HashBy" field.</summary>
-    public const int HashByFieldNumber = 3;
-    private string hashBy_ = "";
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string HashBy {
-      get { return hashBy_; }
-      set {
-        hashBy_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override bool Equals(object other) {
-      return Equals(other as Message);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public bool Equals(Message other) {
-      if (ReferenceEquals(other, null)) {
-        return false;
-      }
-      if (ReferenceEquals(other, this)) {
-        return true;
-      }
-      if (Topic != other.Topic) return false;
-      if (Data != other.Data) return false;
-      if (HashBy != other.HashBy) return false;
-      return true;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override int GetHashCode() {
-      int hash = 1;
-      if (Topic.Length != 0) hash ^= Topic.GetHashCode();
-      if (Data.Length != 0) hash ^= Data.GetHashCode();
-      if (HashBy.Length != 0) hash ^= HashBy.GetHashCode();
-      return hash;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public override string ToString() {
-      return pb::JsonFormatter.ToDiagnosticString(this);
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void WriteTo(pb::CodedOutputStream output) {
-      if (Topic.Length != 0) {
-        output.WriteRawTag(10);
-        output.WriteString(Topic);
-      }
-      if (Data.Length != 0) {
-        output.WriteRawTag(18);
-        output.WriteBytes(Data);
-      }
-      if (HashBy.Length != 0) {
-        output.WriteRawTag(26);
-        output.WriteString(HashBy);
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int CalculateSize() {
-      int size = 0;
-      if (Topic.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(Topic);
-      }
-      if (Data.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeBytesSize(Data);
-      }
-      if (HashBy.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(HashBy);
-      }
-      return size;
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(Message other) {
-      if (other == null) {
-        return;
-      }
-      if (other.Topic.Length != 0) {
-        Topic = other.Topic;
-      }
-      if (other.Data.Length != 0) {
-        Data = other.Data;
-      }
-      if (other.HashBy.Length != 0) {
-        HashBy = other.HashBy;
-      }
-    }
-
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public void MergeFrom(pb::CodedInputStream input) {
-      uint tag;
-      while ((tag = input.ReadTag()) != 0) {
-        switch(tag) {
-          default:
-            input.SkipLastField();
-            break;
-          case 10: {
-            Topic = input.ReadString();
-            break;
-          }
-          case 18: {
-            Data = input.ReadBytes();
-            break;
-          }
-          case 26: {
-            HashBy = input.ReadString();
             break;
           }
         }

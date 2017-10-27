@@ -1,10 +1,8 @@
 ﻿using System;
 
-using vivego.Proto.PubSub.Messages;
-
-namespace vivego.Proto.PubSub.Topic
+namespace vivego.PublishSubscribe.Topic
 {
-	internal class DefaultTopicFilter : ITopicFilter
+	public class DefaultTopicFilter : ITopicFilter
 	{
 		private const char WildCardChar = '*';
 		private const char FullWildCardChar = '>';

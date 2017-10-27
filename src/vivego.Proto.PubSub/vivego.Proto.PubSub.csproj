@@ -28,6 +28,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\vivego.core\vivego.core.csproj" />
 		<ProjectReference Include="..\vivego.Proto.Actor.core\vivego.Proto.csproj" />
+		<ProjectReference Include="..\vivego.PublishSubscribe\vivego.PublishSubscribe.csproj" />
 		<ProjectReference Include="..\vivego.Serializer.Abstractions\vivego.Serializer.Abstractions.csproj" />
 	</ItemGroup>
 

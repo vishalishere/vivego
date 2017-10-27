@@ -10,6 +10,7 @@ using Grpc.Core.Utils;
 using Microsoft.Extensions.Logging;
 
 using vivego.core;
+using vivego.PublishSubscribe.Cache;
 using vivego.PublishSubscribe.Topic;
 
 namespace vivego.PublishSubscribe
@@ -46,9 +47,10 @@ namespace vivego.PublishSubscribe
 				{
 					IEnumerable<Task> writerTasks = _lookup
 						.Lookup(message)
-						.SelectMany(writers => writers.Select(serverStreamWriter => serverStreamWriter.WriteAsync(message)));
+						.SelectMany(tuple => tuple.Writer.Select(serverStreamWriter => serverStreamWriter.WriteAsync(message)));
 					return Task.WhenAll(writerTasks);
-				});
+				})
+				.ConfigureAwait(false);
 			return _empty;
 		}
 

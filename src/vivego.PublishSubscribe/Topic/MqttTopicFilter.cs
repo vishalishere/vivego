@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-using vivego.Proto.PubSub.Messages;
-
-namespace vivego.Proto.PubSub.Topic
+namespace vivego.PublishSubscribe.Topic
 {
 	/// <summary>
 	///     From https://github.com/xamarin/mqtt

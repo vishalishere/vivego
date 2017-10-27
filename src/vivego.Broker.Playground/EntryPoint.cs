@@ -9,20 +9,14 @@ using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Grpc.Core;
-
 using Microsoft.Extensions.Logging;
 
 using Proto;
-using Proto.Cluster;
-using Proto.Cluster.Consul;
-using Proto.Remote;
 using Proto.Router;
 
 using vivego.core;
 using vivego.Discovery.Abstactions;
 using vivego.Discovery.DotNetty;
-using vivego.Proto.ClusterProvider;
 using vivego.Proto.PubSub;
 using vivego.Serializer.Abstractions;
 using vivego.Serializer.MessagePack;
@@ -276,14 +270,6 @@ namespace ProtoBroker.Playground
 	{
 		public static async Task Main(string[] args)
 		{
-			vivego.Discovery.Udp.UdpDiscoverClientFactory udpDiscoverClientFactory = new vivego.Discovery.Udp.UdpDiscoverClientFactory("a", 55551, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
-			udpDiscoverClientFactory
-				.MakeObservable()
-				.Subscribe(ipEndPoints =>
-				{
-					Console.Out.WriteLine(ipEndPoints.Select(x => x.ToString()).Join(";"));
-				});
-
 			long counter = 0;
 			ISerializer<byte[]> serializer = new MessagePackSerializer();
 			ILoggerFactory loggerFactory = new LoggerFactory().AddConsole(LogLevel.Debug);
@@ -292,8 +278,8 @@ namespace ProtoBroker.Playground
 			int serverPort = PortUtils.FindAvailablePortIncrementally(35100);
 			IPEndPoint[] seedsEndpoints = { new IPEndPoint(ipAddress, 35100), new IPEndPoint(ipAddress, serverPort), new IPEndPoint(ipAddress, serverPort + 1) };
 
-			//IPublishSubscribe publishSubscribe1 = PubSubAutoConfig.Auto("unique1");
-			var publishSubscribe1 = new vivego.PublishSubscribe.PublishSubscribe(serverPort, loggerFactory, serializer);
+			IPublishSubscribe publishSubscribe1 = PubSubAutoConfig.Auto("unique1");
+			//var publishSubscribe1 = new vivego.PublishSubscribe.PublishSubscribe("127.0.0.1", serverPort, loggerFactory, serializer);
 			using (publishSubscribe1
 				.Observe<object>("*")
 				.Subscribe(_ =>

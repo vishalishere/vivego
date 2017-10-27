@@ -13,22 +13,20 @@ using Proto.Router;
 using vivego.core;
 using vivego.Proto.PubSub.Messages;
 using vivego.Proto.PubSub.Route;
-using vivego.Proto.PubSub.Topic;
+using vivego.PublishSubscribe;
+using vivego.PublishSubscribe.Cache;
+using vivego.PublishSubscribe.Topic;
 
 namespace vivego.Proto.PubSub
 {
 	public class PublishSubscribeRouterActor : DisposableBase
 	{
-		private readonly Func<Subscription, ITopicFilter> _topicFilterFactory;
 		private readonly ILogger<PublishSubscribeRouterActor> _logger;
+		private readonly ISubscriptionWriterLookup<PID> _lookup;
 		private readonly Dictionary<string, PID> _lookupCache = new Dictionary<string, PID>();
-
-		private readonly Dictionary<string, Dictionary<PID, (ITopicFilter TopicFilter, Subscription Subscription)>>
-			_subscriptions = new Dictionary<string, Dictionary<PID, (ITopicFilter, Subscription)>>();
-
-		private readonly Subscription<object> _topologySubscription;
-		private PID[] _pubSubRouters = new PID[0];
 		private readonly string _publishSubscribeRouterActorName;
+		private readonly Func<Subscription, ITopicFilter> _topicFilterFactory;
+		private readonly Subscription<object> _topologySubscription;
 
 		public PublishSubscribeRouterActor(
 			string clusterName,
@@ -43,15 +41,14 @@ namespace vivego.Proto.PubSub
 
 			_topicFilterFactory = topicFilterFactory ?? throw new ArgumentNullException(nameof(topicFilterFactory));
 
+			_lookup = new SubscriptionWriterLookupCache<PID>(new SubscriptionWriterLookup<PID>());
+
 			_logger = loggerFactory.CreateLogger<PublishSubscribeRouterActor>();
 			_publishSubscribeRouterActorName = $"{clusterName}_{typeof(PublishSubscribeRouterActor).FullName}";
 			Props props = Actor.FromFunc(ReceiveAsync).WithMailbox(() => BoundedMailbox.Create(sendBufferSize));
 			PubSubRouterActorPid = Actor.SpawnNamed(props, _publishSubscribeRouterActorName);
 			_topologySubscription = Actor.EventStream
-				.Subscribe<ClusterTopologyEvent>(clusterTopologyEvent =>
-				{
-					PubSubRouterActorPid.Tell(clusterTopologyEvent);
-				});
+				.Subscribe<ClusterTopologyEvent>(clusterTopologyEvent => { PubSubRouterActorPid.Tell(clusterTopologyEvent); });
 		}
 
 		public PID PubSubRouterActorPid { get; }
@@ -71,72 +68,39 @@ namespace vivego.Proto.PubSub
 			return Router.NewRoundRobinGroup(pids);
 		}
 
+		private PID Lookup(Message message)
+		{
+			List<PID> routerPids = new List<PID>();
+			(string Group, bool HashBy, PID[] Writer)[] pidGroups = _lookup.Lookup(message);
+			foreach ((string Group, bool HashBy, PID[] Writer) pidGroup in pidGroups)
+			{
+				if (pidGroups.Length == 0)
+				{
+					continue;
+				}
+
+				Props routerProds = MakeRouterProps(message, pidGroup.Group, pidGroup.HashBy, pidGroup.Writer);
+				PID routerPid = Actor.Spawn(routerProds);
+				routerPids.Add(routerPid);
+			}
+
+			return Actor.Spawn(Router.NewBroadcastGroup(routerPids.ToArray()));
+		}
+
 		private void ClearCache()
 		{
 			_lookupCache.Clear();
 		}
 
-		private PID Lookup(string group, Message message, Dictionary<PID, (ITopicFilter TopicFilter, Subscription Subscription)> subscriptions)
+		private PID LookupCached(Message message)
 		{
-			string cacheKey = $"{group}_{message.Topic}";
-			if (!_lookupCache.TryGetValue(cacheKey, out PID routerPid))
+			if (!_lookupCache.TryGetValue(message.Topic, out PID pid))
 			{
-				var matches = subscriptions
-					.Where(pair => pair.Value.TopicFilter.Matches(message.Topic))
-					.OrderBy(pair => pair.Value.Subscription.PID.Address)
-					.ThenBy(pair => pair.Value.Subscription.PID.Id)
-					.ToArray();
-
-				if (matches.Length == 0)
-				{
-					routerPid = Actor.Spawn(Actor.FromFunc(context => Task.CompletedTask));
-				}
-				else
-				{
-					PID[] matchedPids = matches
-						.Where(pair => !pair.Value.Subscription.HashBy)
-						.Select(pair => pair.Key)
-						.ToArray();
-					PID[] matchedHashByPids = matches
-						.Where(pair => pair.Value.Subscription.HashBy)
-						.Select(pair => pair.Key)
-						.ToArray();
-
-					if (matchedHashByPids.Length == 0)
-					{
-						Props routerProds = MakeRouterProps(message, group, false, matchedPids);
-						routerPid = Actor.Spawn(routerProds);
-					} else if (matchedPids.Length == 0)
-					{
-						Props routerProds = MakeRouterProps(message, group, true, matchedHashByPids);
-						routerPid = Actor.Spawn(routerProds);
-					}
-					else
-					{
-						Props hashByRouterProds = MakeRouterProps(message, group, true, matchedHashByPids);
-						PID hashByRouterPid = Actor.Spawn(hashByRouterProds);
-
-						Props routerProds = MakeRouterProps(message, group, false, matchedPids);
-						routerPid = Actor.Spawn(routerProds);
-
-						routerPid = Actor.Spawn(Router.NewBroadcastGroup(hashByRouterPid, routerPid));
-					}
-				}
-
-				_lookupCache.Add(cacheKey, routerPid);
+				pid = Lookup(message);
+				_lookupCache.Add(message.Topic, pid);
 			}
 
-			return routerPid;
-		}
-
-		private IEnumerable<PID> Lookup(Message message)
-		{
-			return _subscriptions
-				.Select(pair =>
-				{
-					string group = pair.Key;
-					return Lookup(group, message, pair.Value);
-				});
+			return pid;
 		}
 
 		private Task ReceiveAsync(IContext context)
@@ -144,7 +108,7 @@ namespace vivego.Proto.PubSub
 			switch (context.Message)
 			{
 				case ClusterTopologyEvent clusterTopologyEvent:
-					_pubSubRouters = clusterTopologyEvent
+					PID[] pubSubRouters = clusterTopologyEvent
 						.Statuses
 						.Where(memberStatus => memberStatus.Alive)
 						.Select(memberStatus =>
@@ -154,12 +118,11 @@ namespace vivego.Proto.PubSub
 						})
 						.ToArray();
 
-					_subscriptions
-						.SelectMany(pair => pair.Value.Select(valuePair => valuePair.Value.Subscription))
-						.DistinctBy(subscription => subscription.PID)
+					_lookup
+						.GetAll()
 						.ForEach(subscription =>
 						{
-							foreach (PID routerPid in _pubSubRouters)
+							foreach (PID routerPid in pubSubRouters)
 							{
 								routerPid.Tell(subscription);
 							}
@@ -173,46 +136,31 @@ namespace vivego.Proto.PubSub
 
 					break;
 				case Message message:
-					foreach (PID pid in Lookup(message))
-					{
-						pid.Tell(message);
-					}
-
-					break;
-				case Subscription subscription:
 				{
-					if (!_subscriptions.TryGetValue(subscription.Group, out Dictionary<PID, (ITopicFilter, Subscription)> subscriptions))
+					PID routerPid = LookupCached(message);
+					routerPid.Tell(message);
+					break;
+				}
+				case ProtoSubscription subscription:
+				{
+					bool added = _lookup.Add(subscription.PID, subscription.Subscription, _topicFilterFactory(subscription.Subscription));
+					if (added)
 					{
-						subscriptions = new Dictionary<PID, (ITopicFilter, Subscription)>();
-						_subscriptions.Add(subscription.Group, subscriptions);
-					}
-
-					ITopicFilter topicFilter = _topicFilterFactory(subscription);
-					if (!subscriptions.ContainsKey(subscription.PID))
-					{
-						subscriptions.Add(subscription.PID, (topicFilter, subscription));
 						context.Watch(subscription.PID);
+						_logger.LogDebug("Added subscription from: '{0}', with topic '{1}' and group: '{2}'", subscription.PID,
+							subscription.Subscription.Topic, subscription.Subscription.Group);
 						ClearCache();
-						foreach (PID routerPid in _pubSubRouters)
-						{
-							routerPid.Tell(subscription);
-						}
-
-						_logger.LogDebug("Added subscription from: '{0}', with topic '{1}' and group: '{2}'", subscription.PID, subscription.Topic, subscription.Group);
 					}
 
 					break;
 				}
 				case Terminated terminated:
 				{
-					foreach (var groupSubscription in _subscriptions)
+					ClearCache();
+					foreach (Subscription subscription in _lookup.Remove(terminated.Who))
 					{
-						if (groupSubscription.Value.TryGetValue(terminated.Who, out (ITopicFilter, Subscription Subscription) tuple2))
-						{
-							groupSubscription.Value.Remove(terminated.Who);
-							ClearCache();
-							_logger.LogDebug("Removed subscription with PID: '{0}'; Topic: {1}; Group: {2}", tuple2.Subscription.PID, tuple2.Subscription.Topic, tuple2.Subscription.Group);
-						}
+						_logger.LogDebug("Removed subscription with PID: '{0}'; Topic: {1}; Group: {2}", terminated.Who,
+							subscription.Topic, subscription.Group);
 					}
 
 					break;

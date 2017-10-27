@@ -13,7 +13,6 @@ message Subscription {
 message Message {
 	string Topic = 1;
 	bytes Data = 2;
-	uint32 Hash = 3;
 }
 
 message Empty {

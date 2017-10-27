@@ -8,11 +8,11 @@ using Microsoft.Extensions.Logging;
 
 using Proto;
 using Proto.Remote;
-using Proto.Router;
 
 using vivego.core;
 using vivego.Proto.PubSub.Messages;
-using vivego.Proto.PubSub.Topic;
+using vivego.PublishSubscribe;
+using vivego.PublishSubscribe.Topic;
 using vivego.Serializer.Abstractions;
 
 namespace vivego.Proto.PubSub
@@ -51,8 +51,7 @@ namespace vivego.Proto.PubSub
 			Message message = new Message
 			{
 				Topic = topic,
-				Data = ByteString.CopyFrom(serialized),
-				HashBy = t is IHashable hashable ? hashable.HashBy() : string.Empty
+				Data = ByteString.CopyFrom(serialized)
 			};
 			_localRouter.Tell(message);
 		}
@@ -82,12 +81,15 @@ namespace vivego.Proto.PubSub
 					return Task.CompletedTask;
 				});
 				PID self = Actor.Spawn(props);
-				_localRouter.Tell(new Subscription
+				_localRouter.Tell(new ProtoSubscription
 				{
-					Topic = topic,
-					Group = group ?? string.Empty,
 					PID = self,
-					HashBy = hashBy
+					Subscription = new Subscription
+					{
+						Topic = topic,
+						Group = group ?? string.Empty,
+						HashBy = hashBy
+					}
 				});
 				return new AnonymousDisposable(() => { self.Stop(); });
 			});
