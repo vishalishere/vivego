@@ -2,7 +2,6 @@
 
 using Orleans;
 using Orleans.Runtime;
-using Orleans.Runtime.Configuration;
 
 using Proto;
 

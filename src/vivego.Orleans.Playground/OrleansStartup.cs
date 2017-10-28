@@ -9,7 +9,6 @@ using Proto;
 using Proto.Cluster;
 
 using vivego.core;
-using vivego.Orleans.Providers;
 using vivego.Proto.ClusterProvider;
 using vivego.Proto.PubSub;
 using vivego.Serializer.Abstractions;
@@ -17,7 +16,7 @@ using vivego.Serializer.MessagePack;
 
 namespace vivego.Orleans.Playground
 {
-	public class OrleansStartup : IOrleansStartup
+	public class OrleansStartup
 	{
 		public IPublishSubscribe PublishSubscribe { get; set; }
 
