@@ -2,7 +2,7 @@
 {
 	public interface ISerializer<T>
 	{
-		T Serialize<TData>(TData t);
+		T Serialize<TData>(TData source);
 		TData Deserialize<TData>(T serializedData);
 	}
 }

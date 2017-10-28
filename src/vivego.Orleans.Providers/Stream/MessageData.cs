@@ -15,20 +15,36 @@ namespace vivego.Orleans.Providers.Stream
 	[DataContract(Name = "messageData")]
 	public class MessageData : IBatchContainer
 	{
-		[NonSerialized] private readonly SerializationManager _serializationManager;
-
 		public MessageData()
 		{
 		}
 
 		public MessageData(SerializationManager serializationManager)
 		{
-			_serializationManager = serializationManager;
+			SerializationManager = serializationManager;
 		}
+
+		[IgnoreDataMember]
+		internal SerializationManager SerializationManager { get; set; }
+
+		/// <summary>
+		///     Position of even in stream.
+		/// </summary>
+		[DataMember(Name = "seq", Order = 2)]
+		public long SequenceNumber { get; set; }
+
+		/// <summary>
+		///     Serialized event data.
+		/// </summary>
+		[DataMember(Name = "data", Order = 3)]
+		public byte[] Payload { get; set; }
+
+		[DataMember(Name = "rctx", Order = 4)]
+		public Dictionary<string, object> RequestContext { get; set; }
 
 		public IEnumerable<Tuple<T, StreamSequenceToken>> GetEvents<T>()
 		{
-			T t = _serializationManager.DeserializeFromByteArray<T>(Payload);
+			T t = SerializationManager.DeserializeFromByteArray<T>(Payload);
 			return new[]
 			{
 				new Tuple<T, StreamSequenceToken>(t, new EventSequenceTokenV2(SequenceNumber, 0))
@@ -69,21 +85,7 @@ namespace vivego.Orleans.Providers.Stream
 		[DataMember(Name = "strmNspc", Order = 1)]
 		public string StreamNamespace { get; set; }
 
-		/// <summary>
-		///     Position of even in stream.
-		/// </summary>
-		[DataMember(Name = "seq", Order = 2)]
-		public long SequenceNumber { get; set; }
-
-		/// <summary>
-		///     Serialized event data.
-		/// </summary>
-		[DataMember(Name = "data", Order = 3)]
-		public byte[] Payload { get; set; }
-
-		[DataMember(Name = "rctx", Order = 4)]
-		public Dictionary<string, object> RequestContext { get; set; }
-
+		[IgnoreDataMember]
 		public StreamSequenceToken SequenceToken => new EventSequenceTokenV2(SequenceNumber);
 	}
 }

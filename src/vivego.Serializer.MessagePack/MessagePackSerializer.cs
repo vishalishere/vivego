@@ -15,9 +15,9 @@ namespace vivego.Serializer.MessagePack
 			return global::MessagePack.MessagePackSerializer.Deserialize<TType>(source);
 		}
 
-		public byte[] Serialize<TType>(TType type)
+		public byte[] Serialize<T>(T source)
 		{
-			return global::MessagePack.MessagePackSerializer.Serialize(type);
+			return global::MessagePack.MessagePackSerializer.Serialize(source);
 		}
 	}
 }

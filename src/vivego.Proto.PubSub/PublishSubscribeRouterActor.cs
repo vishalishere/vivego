@@ -23,7 +23,7 @@ namespace vivego.Proto.PubSub
 	{
 		private readonly ILogger<PublishSubscribeRouterActor> _logger;
 		private readonly ISubscriptionWriterLookup<PID> _lookup;
-		private readonly Dictionary<string, PID> _lookupCache = new Dictionary<string, PID>();
+		private readonly Dictionary<string, PID[]> _lookupCache = new Dictionary<string, PID[]>();
 		private readonly string _publishSubscribeRouterActorName;
 		private readonly Func<Subscription, ITopicFilter> _topicFilterFactory;
 		private readonly Subscription<object> _topologySubscription;
@@ -68,7 +68,7 @@ namespace vivego.Proto.PubSub
 			return Router.NewRoundRobinGroup(pids);
 		}
 
-		private PID Lookup(Message message)
+		private PID[] Lookup(Message message)
 		{
 			List<PID> routerPids = new List<PID>();
 			(string Group, bool HashBy, PID[] Writer)[] pidGroups = _lookup.Lookup(message);
@@ -79,12 +79,19 @@ namespace vivego.Proto.PubSub
 					continue;
 				}
 
-				Props routerProds = MakeRouterProps(message, pidGroup.Group, pidGroup.HashBy, pidGroup.Writer);
-				PID routerPid = Actor.Spawn(routerProds);
-				routerPids.Add(routerPid);
+				if (pidGroup.Writer.Length == 1)
+				{
+					routerPids.Add(pidGroup.Writer[0]);
+				}
+				else
+				{
+					Props routerProds = MakeRouterProps(message, pidGroup.Group, pidGroup.HashBy, pidGroup.Writer);
+					PID routerPid = Actor.Spawn(routerProds);
+					routerPids.Add(routerPid);
+				}
 			}
 
-			return Actor.Spawn(Router.NewBroadcastGroup(routerPids.ToArray()));
+			return routerPids.ToArray();
 		}
 
 		private void ClearCache()
@@ -92,9 +99,9 @@ namespace vivego.Proto.PubSub
 			_lookupCache.Clear();
 		}
 
-		private PID LookupCached(Message message)
+		private IEnumerable<PID> LookupCached(Message message)
 		{
-			if (!_lookupCache.TryGetValue(message.Topic, out PID pid))
+			if (!_lookupCache.TryGetValue(message.Topic, out PID[] pid))
 			{
 				pid = Lookup(message);
 				_lookupCache.Add(message.Topic, pid);
@@ -137,8 +144,12 @@ namespace vivego.Proto.PubSub
 					break;
 				case Message message:
 				{
-					PID routerPid = LookupCached(message);
-					routerPid.Tell(message);
+					IEnumerable<PID> routerPids = LookupCached(message);
+					foreach (PID routerPid in routerPids)
+					{
+						routerPid.Tell(message);
+					}
+
 					break;
 				}
 				case ProtoSubscription subscription:

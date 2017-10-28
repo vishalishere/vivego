@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using Orleans.Serialization;
 using Orleans.Streams;
 
 using vivego.Proto.PubSub;
@@ -13,14 +14,17 @@ namespace vivego.Orleans.Providers.Stream
 	{
 		private readonly ConcurrentQueue<IBatchContainer> _batchContainers = new ConcurrentQueue<IBatchContainer>();
 		private readonly IPublishSubscribe _publishSubscribe;
+		private readonly SerializationManager _serializationManager;
 		private readonly QueueId _queueId;
 
 		private IDisposable _subscription;
 
-		public PublishSubscribeQueueAdapterReceiver(IPublishSubscribe publishSubscribe,
-			QueueId queueId)
+		public PublishSubscribeQueueAdapterReceiver(QueueId queueId,
+			IPublishSubscribe publishSubscribe,
+			SerializationManager serializationManager)
 		{
 			_publishSubscribe = publishSubscribe;
+			_serializationManager = serializationManager;
 			_queueId = queueId;
 		}
 
@@ -31,7 +35,17 @@ namespace vivego.Orleans.Providers.Stream
 			_subscription?.Dispose();
 			_subscription = _publishSubscribe
 				.Observe<MessageData>(_queueId.ToString(), _queueId.ToString())
-				.Subscribe(tuple => _batchContainers.Enqueue(tuple.Data));
+				.Subscribe(tuple =>
+				{
+					switch (tuple.Data)
+					{
+						case MessageData messageData:
+							messageData.SerializationManager = _serializationManager;
+							break;
+					}
+
+					_batchContainers.Enqueue(tuple.Data);
+				});
 
 			return Task.CompletedTask;
 		}

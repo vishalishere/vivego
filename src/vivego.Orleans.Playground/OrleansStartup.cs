@@ -13,7 +13,7 @@ using vivego.Orleans.Providers;
 using vivego.Proto.ClusterProvider;
 using vivego.Proto.PubSub;
 using vivego.Serializer.Abstractions;
-using vivego.Serializer.Wire;
+using vivego.Serializer.MessagePack;
 
 namespace vivego.Orleans.Playground
 {
@@ -24,7 +24,7 @@ namespace vivego.Orleans.Playground
 		public OrleansStartup(string clusterName)
 		{
 			ILoggerFactory loggerFactory = new NullLoggerFactory();
-			ISerializer<byte[]> serializer = new WireSerializer();
+			ISerializer<byte[]> serializer = new MessagePackSerializer();
 			PublishSubscribe = new Proto.PubSub.PublishSubscribe(clusterName, serializer, loggerFactory);
 
 			// Start ProtoActor Cluster

@@ -42,7 +42,7 @@ namespace vivego.Orleans.Providers.Stream
 			string queueidString = queueId.ToString();
 			foreach (T @event in events)
 			{
-				MessageData messageData = new MessageData
+				MessageData messageData = new MessageData(_serializationManager)
 				{
 					Payload = _serializationManager.SerializeToByteArray(@event),
 					StreamGuid = streamGuid,
@@ -64,7 +64,7 @@ namespace vivego.Orleans.Providers.Stream
 			{
 				if (!_queueAdapterReceivers.TryGetValue(queueId.ToString(), out PublishSubscribeQueueAdapterReceiver adapterReceiver))
 				{
-					adapterReceiver = new PublishSubscribeQueueAdapterReceiver(_publishSubscribe, queueId);
+					adapterReceiver = new PublishSubscribeQueueAdapterReceiver(queueId, _publishSubscribe, _serializationManager);
 					if (!_queueAdapterReceivers.TryAdd(queueId.ToString(), adapterReceiver))
 					{
 						continue;

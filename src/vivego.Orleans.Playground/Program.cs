@@ -22,8 +22,6 @@ namespace vivego.Orleans.Playground
 				.AddApplicationPart(typeof(TestGrain).Assembly)
 				.UseConfiguration(siloConfig)
 				.UseServiceProviderFactory(collection => orleansStartup.ConfigureServices(collection))
-				//.UseInMemoryLeaseProvider()
-				//.UseGrainBasedMembership()
 				.Build();
 
 			ClientConfiguration clientConfiguration = ClientConfiguration
@@ -43,6 +41,7 @@ namespace vivego.Orleans.Playground
 				using (IClusterClientEx clusterClient = clientBuilder.Run())
 				{
 					clusterClient.GetGrain<ITestGrain>(Guid.NewGuid()).Run().Wait();
+					orleansStartup.PublishSubscribe.Publish("from Console", "Hello From Console");
 					Console.WriteLine("Press Enter to close.");
 					Console.ReadLine();
 				}
