@@ -12,7 +12,7 @@ namespace vivego.Orleans.Playground
 		Task Run();
 	}
 
-	[ImplicitStreamSubscription(typeof(string))]
+	[ImplicitStreamSubscription("SendToSelf")]
 	public class TestGrain : Grain, ITestGrain
 	{
 		private readonly IPublishSubscribe _publishSubscribe;

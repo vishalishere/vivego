@@ -10,7 +10,7 @@ namespace vivego.Orleans.Providers.Membership
 {
 	public class MembershipProvider : IMembershipTable
 	{
-		public Task InitializeMembershipTable(GlobalConfiguration globalConfiguration, bool tryInitTableVersion, Logger logger)
+		public Task InitializeMembershipTable(bool tryInitTableVersion)
 		{
 			throw new System.NotImplementedException();
 		}

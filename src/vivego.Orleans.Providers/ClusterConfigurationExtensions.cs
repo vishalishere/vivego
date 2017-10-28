@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using Orleans.Hosting;
 using Orleans.Runtime.Configuration;
-using Orleans.Runtime.Host;
 
 using vivego.core;
 using vivego.Orleans.Providers.Stream;
@@ -42,46 +42,20 @@ namespace vivego.Orleans.Providers
 			return clusterConfiguration;
 		}
 
-		public static ClusterConfiguration UseOrleansStartup<T>(this ClusterConfiguration clusterConfiguration)
-			where T : IOrleansStartup, new()
+		public static IDisposable Run(this ISiloHost siloHost)
 		{
-			if (clusterConfiguration == null)
+			if (siloHost == null)
 			{
-				throw new ArgumentNullException(nameof(clusterConfiguration));
+				throw new ArgumentNullException(nameof(siloHost));
 			}
 
-			clusterConfiguration.UseStartupType<OrleansStartup>();
-			OrleansStartup.Register<T>();
-			return clusterConfiguration;
-		}
-
-		public static ClusterConfiguration UseOrleansStartup(this ClusterConfiguration clusterConfiguration, IOrleansStartup orleansStartup)
-		{
-			if (clusterConfiguration == null)
-			{
-				throw new ArgumentNullException(nameof(clusterConfiguration));
-			}
-
-			clusterConfiguration.UseStartupType<OrleansStartup>();
-			OrleansStartup.Register(orleansStartup);
-			return clusterConfiguration;
-		}
-
-		public static IDisposable Run(this ClusterConfiguration clusterConfiguration,
-			string siloName = null)
-		{
-			if (clusterConfiguration == null)
-			{
-				throw new ArgumentNullException(nameof(clusterConfiguration));
-			}
-
-			SiloHost silo = new SiloHost(siloName ?? Guid.NewGuid().ToString(), clusterConfiguration);
-			silo.InitializeOrleansSilo();
-			silo.StartOrleansSilo();
+			siloHost.StartAsync().Wait();
 			return new AnonymousDisposable(() =>
 			{
-				silo.StopOrleansSilo();
-				silo.ShutdownOrleansSilo();
+				if (!siloHost.Stopped.IsCompleted)
+				{
+					siloHost.StopAsync().Wait();
+				}
 			});
 		}
 	}

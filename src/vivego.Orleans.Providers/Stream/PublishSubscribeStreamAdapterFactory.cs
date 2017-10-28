@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 using Orleans.Providers;
 using Orleans.Providers.Streams.Common;
@@ -80,18 +81,16 @@ namespace vivego.Orleans.Providers.Stream
 		public bool IsRewindable => true;
 		public StreamProviderDirection Direction => StreamProviderDirection.ReadWrite;
 
-		public void Init(IProviderConfiguration config,
-			string providerName,
-			Logger logger,
-			IServiceProvider serviceProvider)
+		public void Init(IProviderConfiguration config, string providerName, IServiceProvider serviceProvider)
 		{
 			Name = providerName;
 
 			_publishSubscribe = serviceProvider.GetRequiredService<IPublishSubscribe>();
 			_serializationManager = serviceProvider.GetRequiredService<SerializationManager>();
+			ILoggerFactory loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
 
 			PublishSubscribeStreamConfiguration publishSubscribeStreamConfiguration = new PublishSubscribeStreamConfiguration(config);
-			_adapterCache = new SimpleQueueAdapterCache(publishSubscribeStreamConfiguration.InMemoryCacheSize, logger);
+			_adapterCache = new SimpleQueueAdapterCache(publishSubscribeStreamConfiguration.InMemoryCacheSize, providerName, loggerFactory);
 			_streamQueueMapper = new HashRingBasedStreamQueueMapper(publishSubscribeStreamConfiguration.NumberOfQueues, providerName);
 		}
 

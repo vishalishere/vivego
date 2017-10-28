@@ -37,15 +37,20 @@ namespace vivego.Orleans.Providers.Stream
 
 		public bool ImportRequestContext()
 		{
-			if (RequestContext != null
-				&& RequestContext.Count > 0)
-			{
-				global::Orleans.Runtime.RequestContext.Import(RequestContext);
-				return true;
-			}
-
 			return false;
 		}
+
+		//public bool ImportRequestContext()
+		//{
+		//	if (RequestContext != null
+		//		&& RequestContext.Count > 0)
+		//	{
+		//		global::Orleans.Runtime.RequestContext..Import(RequestContext);
+		//		return true;
+		//	}
+
+		//	return false;
+		//}
 
 		public bool ShouldDeliver(IStreamIdentity stream, object filterData, StreamFilterPredicate shouldReceiveFunc)
 		{

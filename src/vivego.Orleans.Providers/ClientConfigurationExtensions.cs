@@ -60,25 +60,15 @@ namespace vivego.Orleans.Providers
 			return clientConfiguration;
 		}
 
-		public static IClusterClientEx Run(this ClientConfiguration clientConfiguration,
-			params IOrleansStartup[] orleansStartups)
+		public static IClusterClientEx Run(this IClientBuilder clientBuilder)
 		{
-			if (clientConfiguration == null)
+			if (clientBuilder == null)
 			{
-				throw new ArgumentNullException(nameof(clientConfiguration));
+				throw new ArgumentNullException(nameof(clientBuilder));
 			}
 
 			ClusterClientWapper clusterClientWapper = new ClusterClientWapper();
-			ClientBuilder clientBuilder = new ClientBuilder();
 			clientBuilder
-				.UseConfiguration(clientConfiguration)
-				.ConfigureServices(collection =>
-				{
-					foreach (IOrleansStartup orleansStartup in orleansStartups)
-					{
-						orleansStartup.ConfigureServices(collection);
-					}
-				})
 				.AddClientInvokeCallback(clusterClientWapper.Callback)
 				.AddClusterConnectionLostHandler(clusterClientWapper.Handler);
 			clusterClientWapper.ClusterClient = clientBuilder.Build();
