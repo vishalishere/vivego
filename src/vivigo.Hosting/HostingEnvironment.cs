@@ -92,6 +92,7 @@ namespace vivigo.Hosting
 			{
 				throw new ArgumentNullException(nameof(environmentNameKey));
 			}
+
 			if (string.IsNullOrWhiteSpace(environmentNameKey))
 			{
 				throw new WhitespaceStringException(nameof(environmentNameKey));
@@ -103,16 +104,7 @@ namespace vivigo.Hosting
 				environment = Constants.EnvironmentNameProduction;
 			}
 
-#if NETSTANDARD1_3
-
-            return new HostingEnvironment(
-                environment, null, Directory.GetCurrentDirectory());
-
-#else
-			return new HostingEnvironment(
-				environment, Assembly.GetEntryAssembly().GetName().Name, Directory.GetCurrentDirectory());
-
-#endif
+			return new HostingEnvironment(environment, Assembly.GetEntryAssembly().GetName().Name, Directory.GetCurrentDirectory());
 		}
 	}
 }
