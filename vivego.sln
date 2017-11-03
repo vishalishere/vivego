@@ -37,10 +37,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.Serializer.Abstracti
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProtoBroker.Playground", "src\vivego.Broker.Playground\ProtoBroker.Playground.csproj", "{809B0B54-39A6-4582-B846-A0E5303DF67F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.WampSharp.Proto.SubPub.Backplane", "src\vivego.WampSharp.Proto.SubPub.Backplane\vivego.WampSharp.Proto.SubPub.Backplane.csproj", "{C606F25A-0868-46F1-B92C-55AD5119EF43}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.WampSharp.Proto.SubPub.Backplane.Playground", "src\vivego.WampSharp.Proto.SubPub.Backplane.Playground\vivego.WampSharp.Proto.SubPub.Backplane.Playground.csproj", "{B5C0871D-BEF1-4749-BD9C-F37AEFBEF85B}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.Serializer.Wire", "src\vivego.Serializer.Wire\vivego.Serializer.Wire.csproj", "{AD6D65B1-665E-4196-B218-7635EB2D0C48}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.Orleans.Providers", "src\vivego.Orleans.Providers\vivego.Orleans.Providers.csproj", "{2AFF40DC-40EA-4035-A88F-D5C6B68FAD28}"
@@ -72,6 +68,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.PublishSubscribe", "src\vivego.PublishSubscribe\vivego.PublishSubscribe.csproj", "{E1FFF330-3C86-4B94-BCEE-7DFAADD5C6D1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.SignalR.PublishSubscribe", "src\vivego.SignalR.PublishSubscribe\vivego.SignalR.PublishSubscribe.csproj", "{D3D6779B-51C9-40D1-8BD8-A2A45E0BF0B9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.WampSharp.PublishSubscribe", "src\vivego.WampSharp.PublishSubscribe\vivego.WampSharp.PublishSubscribe.csproj", "{B9882CF8-2CE4-49D7-9010-C8F150A9BC88}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.WampSharp.PublishSubscribe.Playground", "src\vivego.WampSharp.PublishSubscribe.Playground\vivego.WampSharp.PublishSubscribe.Playground.csproj", "{424AF228-F704-4011-8774-ECA695D38776}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -119,14 +119,6 @@ Global
 		{809B0B54-39A6-4582-B846-A0E5303DF67F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{809B0B54-39A6-4582-B846-A0E5303DF67F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{809B0B54-39A6-4582-B846-A0E5303DF67F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C606F25A-0868-46F1-B92C-55AD5119EF43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C606F25A-0868-46F1-B92C-55AD5119EF43}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C606F25A-0868-46F1-B92C-55AD5119EF43}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C606F25A-0868-46F1-B92C-55AD5119EF43}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B5C0871D-BEF1-4749-BD9C-F37AEFBEF85B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B5C0871D-BEF1-4749-BD9C-F37AEFBEF85B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B5C0871D-BEF1-4749-BD9C-F37AEFBEF85B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B5C0871D-BEF1-4749-BD9C-F37AEFBEF85B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AD6D65B1-665E-4196-B218-7635EB2D0C48}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AD6D65B1-665E-4196-B218-7635EB2D0C48}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AD6D65B1-665E-4196-B218-7635EB2D0C48}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -167,6 +159,14 @@ Global
 		{D3D6779B-51C9-40D1-8BD8-A2A45E0BF0B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D3D6779B-51C9-40D1-8BD8-A2A45E0BF0B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D3D6779B-51C9-40D1-8BD8-A2A45E0BF0B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9882CF8-2CE4-49D7-9010-C8F150A9BC88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9882CF8-2CE4-49D7-9010-C8F150A9BC88}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9882CF8-2CE4-49D7-9010-C8F150A9BC88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9882CF8-2CE4-49D7-9010-C8F150A9BC88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{424AF228-F704-4011-8774-ECA695D38776}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{424AF228-F704-4011-8774-ECA695D38776}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{424AF228-F704-4011-8774-ECA695D38776}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{424AF228-F704-4011-8774-ECA695D38776}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -181,8 +181,6 @@ Global
 		{885E2B4E-0F38-4FCE-9B70-D22F58F69D54} = {401B6E82-1192-4695-8A8F-36D3DE0BDA73}
 		{C0B29A63-2CA8-4A6D-B08A-7A29866D1579} = {401B6E82-1192-4695-8A8F-36D3DE0BDA73}
 		{809B0B54-39A6-4582-B846-A0E5303DF67F} = {103AF6D6-AAE9-4E48-83A1-ECB16E82A897}
-		{C606F25A-0868-46F1-B92C-55AD5119EF43} = {06E60385-23BB-410E-A26C-A996A1A2C8F0}
-		{B5C0871D-BEF1-4749-BD9C-F37AEFBEF85B} = {06E60385-23BB-410E-A26C-A996A1A2C8F0}
 		{AD6D65B1-665E-4196-B218-7635EB2D0C48} = {401B6E82-1192-4695-8A8F-36D3DE0BDA73}
 		{2AFF40DC-40EA-4035-A88F-D5C6B68FAD28} = {042A0FB6-F651-444C-8B78-D0B1224267DC}
 		{3972D654-32AF-4A39-9DE6-A2ED575A82E0} = {042A0FB6-F651-444C-8B78-D0B1224267DC}
@@ -193,6 +191,8 @@ Global
 		{B8E62528-2F51-45F2-B720-D7BA58595781} = {5FC48955-31D8-4E78-BDCC-B6CB5E6F941B}
 		{E1FFF330-3C86-4B94-BCEE-7DFAADD5C6D1} = {103AF6D6-AAE9-4E48-83A1-ECB16E82A897}
 		{D3D6779B-51C9-40D1-8BD8-A2A45E0BF0B9} = {43D36B23-3372-4793-B97B-BB161BFB019B}
+		{B9882CF8-2CE4-49D7-9010-C8F150A9BC88} = {06E60385-23BB-410E-A26C-A996A1A2C8F0}
+		{424AF228-F704-4011-8774-ECA695D38776} = {06E60385-23BB-410E-A26C-A996A1A2C8F0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {70692A79-59D4-47A2-A406-C5C9EEC32B93}

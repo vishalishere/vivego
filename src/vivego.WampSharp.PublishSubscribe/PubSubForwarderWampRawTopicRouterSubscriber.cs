@@ -7,7 +7,7 @@ using WampSharp.Core.Serialization;
 using WampSharp.V2.Core.Contracts;
 using WampSharp.V2.PubSub;
 
-namespace vivego.WampSharp.Proto.SubPub.Backplane
+namespace vivego.WampSharp.PublishSubscribe
 {
 	public class PubSubForwarderWampRawTopicRouterSubscriber : IWampRawTopicRouterSubscriber
 	{

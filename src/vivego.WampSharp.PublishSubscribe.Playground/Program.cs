@@ -23,7 +23,7 @@ using WampSharp.V2.Core;
 using WampSharp.V2.Core.Contracts;
 using WampSharp.V2.Realm;
 
-namespace vivego.WampSharp.Proto.SubPub.Backplane.Playground
+namespace vivego.WampSharp.PublishSubscribe.Playground
 {
 	internal class Program
 	{

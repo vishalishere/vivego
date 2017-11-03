@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 
-namespace vivego.WampSharp.Proto.SubPub.Backplane
+namespace vivego.WampSharp.PublishSubscribe
 {
 	public class AtomicBoolean
 	{

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-namespace vivego.WampSharp.Proto.SubPub.Backplane
+namespace vivego.WampSharp.PublishSubscribe
 {
 	[DataContract(Name = "forwardedWampMessage")]
 	public class ForwardedWampMessage
