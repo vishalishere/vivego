@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.SignalR;
 
 using vivego.Proto.PubSub;
 
-namespace vivego.SignalR.Proto.PubSub
+namespace vivego.SignalR.PublishSubscribe
 {
-	public class ProtoPubSubHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposable
+	public class PublishSubscribeHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposable
 	{
 		private readonly IPublishSubscribe _publishSubscribe;
 		private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
@@ -23,7 +23,7 @@ namespace vivego.SignalR.Proto.PubSub
 		private readonly string _invokeUserAsyncTopic = MakeTopic(nameof(InvokeUserAsync));
 		private readonly string _removeGroupAsyncTopic = MakeTopic(nameof(RemoveGroupAsync));
 
-		public ProtoPubSubHubLifetimeManager(IPublishSubscribe publishSubscribe)
+		public PublishSubscribeHubLifetimeManager(IPublishSubscribe publishSubscribe)
 		{
 			_publishSubscribe = publishSubscribe ?? throw new ArgumentNullException(nameof(publishSubscribe));
 			Setup();
@@ -46,7 +46,7 @@ namespace vivego.SignalR.Proto.PubSub
 
 		private static string MakeTopic(string group)
 		{
-			return $"{typeof(ProtoPubSubHubLifetimeManager<THub>).FullName}_{group}";
+			return $"{typeof(PublishSubscribeHubLifetimeManager<THub>).FullName}_{group}";
 		}
 
 		public override Task InvokeAllAsync(string methodName, object[] args)

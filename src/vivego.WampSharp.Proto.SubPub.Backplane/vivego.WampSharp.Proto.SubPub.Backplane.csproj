@@ -18,7 +18,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="WampSharp" Version="1.2.6.43-beta" />
+		<PackageReference Include="WampSharp" Version="1.2.6.44-beta" />
 	</ItemGroup>
 
 	<ItemGroup>
