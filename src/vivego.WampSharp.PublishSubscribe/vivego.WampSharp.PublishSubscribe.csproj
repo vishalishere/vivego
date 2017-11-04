@@ -22,7 +22,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\vivego.Proto.PubSub\vivego.Proto.PubSub.csproj" />
+		<ProjectReference Include="..\vivego.PublishSubscribe\vivego.PublishSubscribe.csproj" />
 	</ItemGroup>
 
 </Project>

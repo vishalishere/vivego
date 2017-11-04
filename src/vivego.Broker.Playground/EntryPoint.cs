@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.NetworkInformation;
-using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
@@ -17,7 +15,7 @@ using Proto.Router;
 using vivego.core;
 using vivego.Discovery.Abstactions;
 using vivego.Discovery.DotNetty;
-using vivego.Proto.PubSub;
+using vivego.PublishSubscribe;
 using vivego.Serializer.Abstractions;
 using vivego.Serializer.MessagePack;
 
@@ -25,36 +23,6 @@ namespace ProtoBroker.Playground
 {
 	public class PubSubAutoConfig
 	{
-		public static IEnumerable<IPAddress> GetMyIpAddress()
-		{
-			foreach (NetworkInterface allNetworkInterface in NetworkInterface.GetAllNetworkInterfaces())
-			{
-				if (allNetworkInterface.OperationalStatus != OperationalStatus.Up)
-				{
-					continue;
-				}
-
-				IPInterfaceProperties ipProperties = allNetworkInterface.GetIPProperties();
-				if (ipProperties.GatewayAddresses.Count == 0)
-				{
-					continue;
-				}
-
-				foreach (UnicastIPAddressInformation ip in allNetworkInterface.GetIPProperties().UnicastAddresses)
-				{
-					if (ip.Address.Equals(IPAddress.Loopback))
-					{
-						continue;
-					}
-
-					if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
-					{
-						yield return ip.Address;
-					}
-				}
-			}
-		}
-
 		private static IPEndPoint[] QueryEndPointsUdp(string clusterId, IPAddress ipAddress, int serverPort)
 		{
 			IPEndPoint protoActorServerEndpoint = new IPEndPoint(ipAddress, serverPort);
@@ -78,15 +46,6 @@ namespace ProtoBroker.Playground
 		private static bool clusterIsStarted = false;
 		public static IPublishSubscribe Auto(string clusterId)
 		{
-			IPAddress ipAddress = GetMyIpAddress().First();
-			int serverPort = PortUtils.FindAvailablePortIncrementally(35100);
-			IPEndPoint[] seedsEndpoints = {
-				new IPEndPoint(ipAddress, 35100),
-				//new IPEndPoint(ipAddress, 35101),
-				//new IPEndPoint(ipAddress, 35102),
-				//new IPEndPoint(ipAddress, 35103)B
-			};
-
 			ILoggerFactory loggerFactory = new LoggerFactory().AddConsole(LogLevel.Debug);
 			Log.SetLoggerFactory(loggerFactory);
 
@@ -95,7 +54,10 @@ namespace ProtoBroker.Playground
 			//	.LogDebug("Seed endpoints: {0}", string.Join(";", seedsEndpoints.Select(endPoint => endPoint.ToString())));
 
 			ISerializer<byte[]> serializer = new MessagePackSerializer();
-			IPublishSubscribe pubSub = new PublishSubscribe(clusterId, serializer, loggerFactory);
+			IPublishSubscribe pubSub = new PublishSubscribeBuilder()
+				.SetSerializer(serializer)
+				.SetLoggerFactory(loggerFactory)
+				.Build();
 
 			//Cluster.Start(clusterId, ipAddress.ToString(), serverPort, new ConsulProvider(new ConsulProviderOptions
 			//{
@@ -274,7 +236,7 @@ namespace ProtoBroker.Playground
 			ISerializer<byte[]> serializer = new MessagePackSerializer();
 			ILoggerFactory loggerFactory = new LoggerFactory().AddConsole(LogLevel.Debug);
 
-			IPAddress ipAddress = PubSubAutoConfig.GetMyIpAddress().First();
+			IPAddress ipAddress = NetworkUtils.GetLocalIpAddress().First();
 			int serverPort = PortUtils.FindAvailablePortIncrementally(35100);
 			IPEndPoint[] seedsEndpoints = { new IPEndPoint(ipAddress, 35100), new IPEndPoint(ipAddress, serverPort), new IPEndPoint(ipAddress, serverPort + 1) };
 

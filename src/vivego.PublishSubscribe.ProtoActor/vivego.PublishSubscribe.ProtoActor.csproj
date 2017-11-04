@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
+		<LangVersion>latest</LangVersion>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Authors>Esben Carlsen</Authors>
+		<Company>Vivego AB</Company>
+		<Description>
+			Distributed Publish Subscribe based on proto.actor
+		</Description>
+		<Copyright>Vivego AB</Copyright>
+		<PackageLicenseUrl>https://github.com/esbencarlsen/vivego/blob/master/LICENSE</PackageLicenseUrl>
+		<PackageProjectUrl>https://github.com/esbencarlsen/vivego</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/esbencarlsen/vivego</RepositoryUrl>
+		<RepositoryType>Github</RepositoryType>
+		<Version>1.0.0.202</Version>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Google.Protobuf.Tools" Version="3.4.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.0" />
+		<PackageReference Include="Proto.Remote" Version="0.1.13" />
+		<PackageReference Include="System.Reactive" Version="3.1.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\vivego.core\vivego.core.csproj" />
+		<ProjectReference Include="..\vivego.Proto.Actor.core\vivego.Proto.csproj" />
+		<ProjectReference Include="..\vivego.PublishSubscribe\vivego.PublishSubscribe.csproj" />
+		<ProjectReference Include="..\vivego.Serializer.Abstractions\vivego.Serializer.Abstractions.csproj" />
+	</ItemGroup>
+
+</Project>

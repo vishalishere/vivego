@@ -3,7 +3,7 @@
 using Orleans;
 using Orleans.Streams;
 
-using vivego.Proto.PubSub;
+using vivego.PublishSubscribe;
 
 namespace vivego.Orleans.Playground
 {

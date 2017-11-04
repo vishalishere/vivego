@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Orleans.Serialization;
 using Orleans.Streams;
 
-using vivego.Proto.PubSub;
+using vivego.PublishSubscribe;
 
 namespace vivego.Orleans.Providers.Stream
 {

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Reactive.Linq;
 
 using vivego.core;
-using vivego.Proto.PubSub;
+using vivego.PublishSubscribe;
 
 using WampSharp.V2.Core;
 using WampSharp.V2.Core.Contracts;

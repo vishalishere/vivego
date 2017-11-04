@@ -10,7 +10,7 @@ using Proto.Cluster;
 
 using vivego.core;
 using vivego.Proto.ClusterProvider;
-using vivego.Proto.PubSub;
+using vivego.PublishSubscribe;
 using vivego.Serializer.Abstractions;
 using vivego.Serializer.MessagePack;
 
@@ -24,7 +24,10 @@ namespace vivego.Orleans.Playground
 		{
 			ILoggerFactory loggerFactory = new NullLoggerFactory();
 			ISerializer<byte[]> serializer = new MessagePackSerializer();
-			PublishSubscribe = new Proto.PubSub.PublishSubscribe(clusterName, serializer, loggerFactory);
+			PublishSubscribe = new PublishSubscribeBuilder()
+				.SetLoggerFactory(loggerFactory)
+				.SetSerializer(serializer)
+				.Build();
 
 			// Start ProtoActor Cluster
 			int serverPort = PortUtils.FindAvailablePortIncrementally(41000);

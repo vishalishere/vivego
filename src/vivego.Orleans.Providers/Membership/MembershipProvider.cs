@@ -3,8 +3,6 @@
 using Orleans;
 using Orleans.Runtime;
 
-using Proto;
-
 namespace vivego.Orleans.Providers.Membership
 {
 	public class MembershipProvider : IMembershipTable
@@ -45,13 +43,13 @@ namespace vivego.Orleans.Providers.Membership
 		}
 	}
 
-	public class MembershipEntryActor : IActor
-	{
-		private MembershipEntry _state;
+	//public class MembershipEntryActor : IActor
+	//{
+	//	private MembershipEntry _state;
 
-		public Task ReceiveAsync(IContext context)
-		{
-			throw new System.NotImplementedException();
-		}
-	}
+	//	public Task ReceiveAsync(IContext context)
+	//	{
+	//		throw new System.NotImplementedException();
+	//	}
+	//}
 }

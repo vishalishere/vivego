@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.SignalR;
 
-using vivego.Proto.PubSub;
+using vivego.PublishSubscribe;
 
 namespace vivego.SignalR.PublishSubscribe
 {
