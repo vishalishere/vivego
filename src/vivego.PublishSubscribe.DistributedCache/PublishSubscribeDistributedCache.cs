@@ -18,8 +18,8 @@ namespace vivego.PublishSubscribe.DistributedCache
 		private readonly ConcurrentDictionary<string, TaskCompletionSource<byte[]>> _completionSources =
 			new ConcurrentDictionary<string, TaskCompletionSource<byte[]>>();
 
-		private readonly string _getTopic;
 		private readonly IPublishSubscribe _publishSubscribe;
+		private readonly string _getTopic;
 		private readonly string _removeTopic;
 		private readonly string _selfTopic;
 		private readonly string _setTopic;

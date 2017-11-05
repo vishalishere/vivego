@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
 using vivego.PublishSubscribe;
+using vivego.PublishSubscribe.Grpc;
+using vivego.Serializer.Wire;
 using vivego.SignalR.PublishSubscribe;
 
 namespace SignalRChatSample
@@ -15,10 +17,11 @@ namespace SignalRChatSample
 		{
 			services.AddSignalR();
 
-			IPublishSubscribe publishSubscribe = new PublishSubscribeBuilder().Build();
+			IPublishSubscribe publishSubscribe = new PublishSubscribeBuilder(new WireSerializer())
+				//.GrpcPublishSubscribe("localhost")
+				.Build();
 			services.AddSingleton(publishSubscribe);
 			services.AddSignalRPublishSubscribeHubLifetimeManager();
-			vivego.Proto.Cluster.RunSeededLocalCluster();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

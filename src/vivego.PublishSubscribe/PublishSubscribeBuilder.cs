@@ -1,7 +1,9 @@
 ﻿using System;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
+using vivego.core;
 using vivego.PublishSubscribe.Topic;
 using vivego.Serializer.Abstractions;
 
@@ -9,14 +11,25 @@ namespace vivego.PublishSubscribe
 {
 	public class PublishSubscribeBuilder
 	{
-		public PublishSubscribeBuilder()
+		private int _port;
+
+		public PublishSubscribeBuilder(ISerializer<byte[]> serializer)
 		{
-			Factory(builder => new PublishSubscribe(ClusterName, Port, LoggerFactory, Serializer));
+			Serializer = serializer;
+			Port = 35000;
+			//Factory(builder => new PublishSubscribe(ClusterName, Port, LoggerFactory, Serializer));
 		}
 
-		public int Port { get; private set; } = 35000;
+		public bool AllowIncrementalPort { get; set; } = true;
+
+		public int Port
+		{
+			get => AllowIncrementalPort ? PortUtils.FindAvailablePortIncrementally(_port) : _port;
+			private set => _port = value;
+		}
+
 		public string ClusterName { get; private set; } = Environment.MachineName;
-		public ILoggerFactory LoggerFactory { get; private set; }
+		public ILoggerFactory LoggerFactory { get; private set; } = new NullLoggerFactory();
 		public Func<PublishSubscribeBuilder, IPublishSubscribe> PublishSubscribeFactory { get; private set; }
 		public ISerializer<byte[]> Serializer { get; private set; }
 		public Func<Subscription, ITopicFilter> TopicFilterFactory { get; private set; } = _ => new DefaultTopicFilter(_);

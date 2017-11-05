@@ -126,11 +126,15 @@ namespace vivego.PublishSubscribe.ProtoActor
 
 					_lookup
 						.GetAll()
-						.ForEach(subscription =>
+						.ForEach(tuple =>
 						{
 							foreach (PID routerPid in pubSubRouters)
 							{
-								routerPid.Tell(subscription);
+								routerPid.Tell(new ProtoSubscription
+								{
+									Subscription = tuple.Item2,
+									PID = tuple.Item1
+								});
 							}
 						});
 
@@ -146,6 +150,7 @@ namespace vivego.PublishSubscribe.ProtoActor
 					IEnumerable<PID> routerPids = LookupCached(message);
 					foreach (PID routerPid in routerPids)
 					{
+						Console.Out.WriteLine("Tell " + routerPid + " - " + message);
 						routerPid.Tell(message);
 					}
 

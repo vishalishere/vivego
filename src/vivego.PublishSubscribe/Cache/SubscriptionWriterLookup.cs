@@ -14,7 +14,7 @@ namespace vivego.PublishSubscribe.Cache
 
 		public bool Add(TWriter destination, Subscription subscription, ITopicFilter topicFilter)
 		{
-			string group = string.IsNullOrEmpty(subscription.Group) ? Guid.NewGuid().ToString() : subscription.Group;
+			string group = subscription.Group ?? string.Empty;//string.IsNullOrEmpty(subscription.Group) ? Guid.NewGuid().ToString() : subscription.Group;
 			if (!_db.TryGetValue(group, out ConcurrentDictionary<TWriter, (Subscription subscription, ITopicFilter topicFilter)> subscriptions))
 			{
 				subscriptions = new ConcurrentDictionary<TWriter, (Subscription subscription, ITopicFilter topicFilter)>();
@@ -50,10 +50,10 @@ namespace vivego.PublishSubscribe.Cache
 				.ToArray();
 		}
 
-		public TWriter[] GetAll()
+		public (TWriter, Subscription)[] GetAll()
 		{
 			return _db
-				.SelectMany(pair => pair.Value.Select(valuePair => valuePair.Key))
+				.SelectMany(pair => pair.Value.Select(valuePair => (valuePair.Key, valuePair.Value.subscription)))
 				.ToArray();
 		}
 	}

@@ -2,6 +2,7 @@
 
 using vivego.core;
 using vivego.PublishSubscribe;
+using vivego.Serializer.Wire;
 
 using WampSharp.V2;
 using WampSharp.V2.Core;
@@ -14,8 +15,8 @@ namespace vivego.WampSharp.PublishSubscribe.Playground
 	{
 		public static IDisposable EnableDistributedBackplane(IWampHostedRealm realm)
 		{
-			IPublishSubscribe publishSubscribe = new PublishSubscribeBuilder().Build();
-			Proto.Cluster.RunSeededLocalCluster();
+			IPublishSubscribe publishSubscribe = new PublishSubscribeBuilder(new WireSerializer()).Build();
+			Proto.ClusterBuilder.RunSeededLocalCluster();
 			return realm.EnableDistributedBackplane(publishSubscribe);
 		}
 

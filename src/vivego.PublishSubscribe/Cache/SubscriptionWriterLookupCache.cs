@@ -52,7 +52,7 @@ namespace vivego.PublishSubscribe.Cache
 			return dest;
 		}
 
-		public TWriter[] GetAll()
+		public (TWriter, Subscription)[] GetAll()
 		{
 			return _innerSubscriptionWriterLookup.GetAll();
 		}

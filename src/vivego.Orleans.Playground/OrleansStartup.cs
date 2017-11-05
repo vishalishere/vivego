@@ -13,6 +13,7 @@ using vivego.Proto.ClusterProvider;
 using vivego.PublishSubscribe;
 using vivego.Serializer.Abstractions;
 using vivego.Serializer.MessagePack;
+using vivego.Serializer.Wire;
 
 namespace vivego.Orleans.Playground
 {
@@ -24,7 +25,7 @@ namespace vivego.Orleans.Playground
 		{
 			ILoggerFactory loggerFactory = new NullLoggerFactory();
 			ISerializer<byte[]> serializer = new MessagePackSerializer();
-			PublishSubscribe = new PublishSubscribeBuilder()
+			PublishSubscribe = new PublishSubscribeBuilder(new WireSerializer())
 				.SetLoggerFactory(loggerFactory)
 				.SetSerializer(serializer)
 				.Build();

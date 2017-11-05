@@ -13,7 +13,7 @@ using vivego.core;
 using vivego.PublishSubscribe.Cache;
 using vivego.PublishSubscribe.Topic;
 
-namespace vivego.PublishSubscribe
+namespace vivego.PublishSubscribe.Grpc
 {
 	public class PublishSubscribeServerRouter : PubSubService.PubSubServiceBase, IDisposable
 	{

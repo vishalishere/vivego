@@ -21,7 +21,7 @@ namespace vivego.Proto.ClusterProvider
 {
 	public class SeededLocalClusterProvider : DisposableBase, IClusterProvider
 	{
-		private readonly IObservable<IPEndPoint[]> _seedsEndpointObservable;
+		private readonly IObservable<IEnumerable<IPEndPoint>> _seedsEndpointObservable;
 
 		private readonly ISubject<(Node Node, bool Alive)[]> _clusterTopologyEventSubject =
 			Subject.Synchronize(new Subject<(Node Node, bool Alive)[]>());
@@ -31,7 +31,7 @@ namespace vivego.Proto.ClusterProvider
 			Serialization.RegisterFileDescriptor(ProtosReflection.Descriptor);
 		}
 
-		public SeededLocalClusterProvider(IObservable<IPEndPoint[]> seedsEndpointObservable)
+		public SeededLocalClusterProvider(IObservable<IEnumerable<IPEndPoint>> seedsEndpointObservable)
 		{
 			_seedsEndpointObservable = seedsEndpointObservable;
 		}
