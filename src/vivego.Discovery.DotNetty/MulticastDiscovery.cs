@@ -142,7 +142,7 @@ namespace vivego.Discovery.DotNetty
 
 			protected override void ChannelRead0(IChannelHandlerContext ctx, DatagramPacket msg)
 			{
-				byte[] ipaddresBytes = msg.Content.ReadBytes(4).ToArray();
+				byte[] ipaddresBytes = msg.Content.ReadBytes(4).Array;
 				int port = msg.Content.ReadInt();
 
 				_endPoints.Push(new IPEndPoint(new IPAddress(ipaddresBytes), port));

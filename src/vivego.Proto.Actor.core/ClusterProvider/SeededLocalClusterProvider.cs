@@ -36,6 +36,11 @@ namespace vivego.Proto.ClusterProvider
 			_seedsEndpointObservable = seedsEndpointObservable;
 		}
 
+		public Task UpdateMemberStatusValueAsync(IMemberStatusValue statusValue)
+		{
+			return Task.CompletedTask;
+		}
+
 		public Task DeregisterMemberAsync()
 		{
 			return Task.CompletedTask;
@@ -47,7 +52,12 @@ namespace vivego.Proto.ClusterProvider
 			return Task.CompletedTask;
 		}
 
-		public Task RegisterMemberAsync(string clusterName, string h, int p, string[] kinds)
+		public Task RegisterMemberAsync(string clusterName,
+			string h,
+			int p,
+			string[] kinds,
+			IMemberStatusValue statusValue,
+			IMemberStatusValueSerializer serializer)
 		{
 			return Task.CompletedTask;
 		}
@@ -62,7 +72,7 @@ namespace vivego.Proto.ClusterProvider
 						.Select(tuple =>
 						{
 							Uri.TryCreate($"tcp://{tuple.Node.PID.Address}", UriKind.Absolute, out Uri uri);
-							return new MemberStatus(tuple.Node.MemberId, uri.Host, uri.Port, tuple.Node.Kinds, tuple.Alive);
+							return new MemberStatus(tuple.Node.MemberId, uri.Host, uri.Port, tuple.Node.Kinds, tuple.Alive, null);
 						})
 						.ToArray());
 					return newTopology;
@@ -72,7 +82,7 @@ namespace vivego.Proto.ClusterProvider
 
 			Props props = Actor.FromProducer(() => new ClusterProviderIsAliveActor(_clusterTopologyEventSubject));
 			PID isAlivePid = Actor.SpawnNamed(props, typeof(ClusterProviderIsAliveActor).FullName);
-			int memberId = Process.GetCurrentProcess().Id;
+			string memberId = Process.GetCurrentProcess().Id.ToString();
 			string[] kinds = Remote.GetKnownKinds();
 			Node node = new Node
 			{

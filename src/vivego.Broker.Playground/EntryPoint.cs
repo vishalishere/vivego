@@ -14,6 +14,7 @@ using vivego.Discovery.DotNetty;
 using vivego.Proto;
 using vivego.PublishSubscribe;
 using vivego.PublishSubscribe.Grpc;
+using vivego.PublishSubscribe.ProtoActor;
 using vivego.Serializer.Abstractions;
 using vivego.Serializer.MessagePack;
 using vivego.Serializer.Wire;
@@ -51,13 +52,14 @@ namespace ProtoBroker.Playground
 				.SetClusterName(clusterId)
 				.SetSerializer(serializer)
 				.SetLoggerFactory(loggerFactory)
-				.GrpcPublishSubscribe(seedsEndpointObservable: Observable.Return(new[]
-				{
-					new DnsEndPoint("localhost", 35000),
-					new DnsEndPoint("localhost", 35001),
-					new DnsEndPoint("localhost", 35002),
-					new DnsEndPoint("localhost", 35003)
-				}))
+				.ProtoActorPublishSubscribe()
+				//.GrpcPublishSubscribe(seedsEndpointObservable: Observable.Return(new[]
+				//{
+				//	new DnsEndPoint("localhost", 35000),
+				//	new DnsEndPoint("localhost", 35001),
+				//	new DnsEndPoint("localhost", 35002),
+				//	new DnsEndPoint("localhost", 35003)
+				//}))
 				.Build();
 			ClusterBuilder.RunSeededLocalCluster(clusterId);
 

@@ -6,11 +6,11 @@
 using pb = global::Google.Protobuf;
 using pbc = global::Google.Protobuf.Collections;
 using pbr = global::Google.Protobuf.Reflection;
-namespace vivego.Proto.Messages
-{
+using scg = global::System.Collections.Generic;
+namespace vivego.Proto.Messages {
 
-	/// <summary>Holder for reflection information generated from Protos.proto</summary>
-	public static partial class ProtosReflection {
+  /// <summary>Holder for reflection information generated from Protos.proto</summary>
+  public static partial class ProtosReflection {
 
     #region Descriptor
     /// <summary>File descriptor for Protos.proto</summary>
@@ -24,7 +24,7 @@ namespace vivego.Proto.Messages
           string.Concat(
             "CgxQcm90b3MucHJvdG8SDHZpdmVnby5Qcm90bxoWUmVmZXJlbmNlL1Byb3Rv",
             "cy5wcm90byJACgROb2RlEhcKA1BJRBgBIAEoCzIKLmFjdG9yLlBJRBIQCghN",
-            "ZW1iZXJJZBgCIAEoBRINCgVLaW5kcxgDIAMoCUIYqgIVdml2ZWdvLlByb3Rv",
+            "ZW1iZXJJZBgCIAEoCRINCgVLaW5kcxgDIAMoCUIYqgIVdml2ZWdvLlByb3Rv",
             "Lk1lc3NhZ2VzYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Proto.ProtosReflection.Descriptor, },
@@ -83,12 +83,12 @@ namespace vivego.Proto.Messages
 
     /// <summary>Field number for the "MemberId" field.</summary>
     public const int MemberIdFieldNumber = 2;
-    private int memberId_;
+    private string memberId_ = "";
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public int MemberId {
+    public string MemberId {
       get { return memberId_; }
       set {
-        memberId_ = value;
+        memberId_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -125,7 +125,7 @@ namespace vivego.Proto.Messages
     public override int GetHashCode() {
       int hash = 1;
       if (pID_ != null) hash ^= PID.GetHashCode();
-      if (MemberId != 0) hash ^= MemberId.GetHashCode();
+      if (MemberId.Length != 0) hash ^= MemberId.GetHashCode();
       hash ^= kinds_.GetHashCode();
       return hash;
     }
@@ -141,9 +141,9 @@ namespace vivego.Proto.Messages
         output.WriteRawTag(10);
         output.WriteMessage(PID);
       }
-      if (MemberId != 0) {
-        output.WriteRawTag(16);
-        output.WriteInt32(MemberId);
+      if (MemberId.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(MemberId);
       }
       kinds_.WriteTo(output, _repeated_kinds_codec);
     }
@@ -154,8 +154,8 @@ namespace vivego.Proto.Messages
       if (pID_ != null) {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(PID);
       }
-      if (MemberId != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeInt32Size(MemberId);
+      if (MemberId.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(MemberId);
       }
       size += kinds_.CalculateSize(_repeated_kinds_codec);
       return size;
@@ -172,7 +172,7 @@ namespace vivego.Proto.Messages
         }
         PID.MergeFrom(other.PID);
       }
-      if (other.MemberId != 0) {
+      if (other.MemberId.Length != 0) {
         MemberId = other.MemberId;
       }
       kinds_.Add(other.kinds_);
@@ -193,8 +193,8 @@ namespace vivego.Proto.Messages
             input.ReadMessage(pID_);
             break;
           }
-          case 16: {
-            MemberId = input.ReadInt32();
+          case 18: {
+            MemberId = input.ReadString();
             break;
           }
           case 26: {

@@ -8,6 +8,6 @@ package vivego.Proto;
 
 message Node {
 	actor.PID PID = 1;
-	int32 MemberId = 2;
+	string MemberId = 2;
 	repeated string Kinds = 3;
 }
