@@ -51,7 +51,13 @@ namespace ProtoBroker.Playground
 				.SetClusterName(clusterId)
 				.SetSerializer(serializer)
 				.SetLoggerFactory(loggerFactory)
-				.GrpcPublishSubscribe(new IPEndPoint(IPAddress.Loopback, 35000), Observable.Return(new[] {new DnsEndPoint("localhost", 35000)}))
+				.GrpcPublishSubscribe(seedsEndpointObservable: Observable.Return(new[]
+				{
+					new DnsEndPoint("localhost", 35000),
+					new DnsEndPoint("localhost", 35001),
+					new DnsEndPoint("localhost", 35002),
+					new DnsEndPoint("localhost", 35003)
+				}))
 				.Build();
 			ClusterBuilder.RunSeededLocalCluster(clusterId);
 
