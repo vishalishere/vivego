@@ -72,9 +72,10 @@ namespace vivego.Proto.ClusterProvider
 						.Select(tuple =>
 						{
 							Uri.TryCreate($"tcp://{tuple.Node.PID.Address}", UriKind.Absolute, out Uri uri);
-							return new MemberStatus(tuple.Node.MemberId, uri.Host, uri.Port, tuple.Node.Kinds, tuple.Alive, null);
+							return new MemberStatus(tuple.Node.MemberId, uri.Host, uri.Port, tuple.Node.Kinds, tuple.Alive, new SeededLocalClusterProviderMemberStatusValue(tuple.Node.MemberId));
 						})
 						.ToArray());
+
 					return newTopology;
 				})
 				.DistinctUntilChanged(new ClusterTopologyEventEqualityComparer())
@@ -82,7 +83,7 @@ namespace vivego.Proto.ClusterProvider
 
 			Props props = Actor.FromProducer(() => new ClusterProviderIsAliveActor(_clusterTopologyEventSubject));
 			PID isAlivePid = Actor.SpawnNamed(props, typeof(ClusterProviderIsAliveActor).FullName);
-			string memberId = Process.GetCurrentProcess().Id.ToString();
+			string memberId = $"{Environment.MachineName}_{Process.GetCurrentProcess().Id}";
 			string[] kinds = Remote.GetKnownKinds();
 			Node node = new Node
 			{
@@ -94,8 +95,12 @@ namespace vivego.Proto.ClusterProvider
 			_seedsEndpointObservable
 				.Select(seedEndpoints =>
 				{
-					IEnumerable<PID> seedPids = seedEndpoints.Select(EndpointToPid).AddToEnd(isAlivePid);
-					Props broadcastProps = Router.NewBroadcastGroup(seedPids.ToArray());
+					PID[] seedPids = seedEndpoints
+						.Select(EndpointToPid)
+						.AddToEnd(isAlivePid)
+						.Distinct()
+						.ToArray();
+					Props broadcastProps = Router.NewBroadcastGroup(seedPids);
 					return Actor.Spawn(broadcastProps);
 				})
 				.Scan((PID) null, (previous, @new) =>
@@ -103,16 +108,33 @@ namespace vivego.Proto.ClusterProvider
 					previous?.Stop();
 					return @new;
 				})
-				.Subscribe(broadcastPid =>
-				{
-					broadcastPid.Tell(node);
-				});
+				.Subscribe(broadcastPid => { broadcastPid.Tell(node); });
 		}
 
 		private static PID EndpointToPid(IPEndPoint ipEndPoint)
 		{
 			PID pid = new PID(ipEndPoint.ToString(), typeof(ClusterProviderIsAliveActor).FullName);
 			return pid;
+		}
+	}
+
+	internal class SeededLocalClusterProviderMemberStatusValue : IMemberStatusValue
+	{
+		private readonly string _memberId;
+
+		public SeededLocalClusterProviderMemberStatusValue(string memberId)
+		{
+			_memberId = memberId;
+		}
+
+		public bool IsSame(IMemberStatusValue val)
+		{
+			if (val is SeededLocalClusterProviderMemberStatusValue statusValue)
+			{
+				return statusValue._memberId.Equals(_memberId);
+			}
+
+			return false;
 		}
 	}
 }

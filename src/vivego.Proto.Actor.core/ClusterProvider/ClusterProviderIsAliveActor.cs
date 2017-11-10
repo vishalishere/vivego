@@ -37,7 +37,7 @@ namespace vivego.Proto.ClusterProvider
 					break;
 				case string s when s.Equals("Cleanup"):
 				{
-					var now = DateTime.UtcNow;
+					DateTime now = DateTime.UtcNow;
 					foreach (KeyValuePair<PID, (Node Node, bool Alive, DateTime LastUpdated)> tuple in _watchList.ToArray())
 					{
 						if (tuple.Value.Alive)

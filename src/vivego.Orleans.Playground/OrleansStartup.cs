@@ -11,6 +11,7 @@ using Proto.Cluster;
 using vivego.core;
 using vivego.Proto.ClusterProvider;
 using vivego.PublishSubscribe;
+using vivego.PublishSubscribe.ProtoActor;
 using vivego.Serializer.Abstractions;
 using vivego.Serializer.MessagePack;
 using vivego.Serializer.Wire;
@@ -28,6 +29,7 @@ namespace vivego.Orleans.Playground
 			PublishSubscribe = new PublishSubscribeBuilder(new WireSerializer())
 				.SetLoggerFactory(loggerFactory)
 				.SetSerializer(serializer)
+				.ProtoActorPublishSubscribe()
 				.Build();
 
 			// Start ProtoActor Cluster

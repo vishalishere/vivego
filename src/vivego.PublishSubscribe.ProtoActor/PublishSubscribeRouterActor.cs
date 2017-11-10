@@ -52,21 +52,6 @@ namespace vivego.PublishSubscribe.ProtoActor
 
 		public PID PubSubRouterActorPid { get; }
 
-		protected virtual Props MakeRouterProps(Message message, string group, bool hashBy, PID[] pids)
-		{
-			if (hashBy)
-			{
-				return new ConsistentHashGroupRouterConfig(MD5Hasher.Hash, 100, pids).Props();
-			}
-
-			if (string.IsNullOrEmpty(group))
-			{
-				return Router.NewBroadcastGroup(pids);
-			}
-
-			return Router.NewRoundRobinGroup(pids);
-		}
-
 		private PID[] Lookup(Message message)
 		{
 			List<PID> routerPids = new List<PID>();
@@ -84,9 +69,22 @@ namespace vivego.PublishSubscribe.ProtoActor
 				}
 				else
 				{
-					Props routerProds = MakeRouterProps(message, pidGroup.Group, pidGroup.HashBy, pidGroup.Writer);
-					PID routerPid = Actor.Spawn(routerProds);
-					routerPids.Add(routerPid);
+					if (pidGroup.HashBy)
+					{
+						Props routerProds = new ConsistentHashGroupRouterConfig(MD5Hasher.Hash, 100, pidGroup.Writer).Props();
+						PID routerPid = Actor.Spawn(routerProds);
+						routerPids.Add(routerPid);
+					}
+					else if (string.IsNullOrEmpty(pidGroup.Group))
+					{
+						routerPids.AddRange(pidGroup.Writer);
+					}
+					else
+					{
+						Props routerProds = Router.NewRoundRobinGroup(pidGroup.Writer);
+						PID routerPid = Actor.Spawn(routerProds);
+						routerPids.Add(routerPid);
+					}
 				}
 			}
 
@@ -150,7 +148,6 @@ namespace vivego.PublishSubscribe.ProtoActor
 					IEnumerable<PID> routerPids = LookupCached(message);
 					foreach (PID routerPid in routerPids)
 					{
-						Console.Out.WriteLine("Tell " + routerPid + " - " + message);
 						routerPid.Tell(message);
 					}
 

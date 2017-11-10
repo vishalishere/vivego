@@ -41,7 +41,7 @@ namespace vivego.Orleans.Playground
 				using (IClusterClientEx clusterClient = clientBuilder.Run())
 				{
 					clusterClient.GetGrain<ITestGrain>(Guid.NewGuid()).Run().Wait();
-					orleansStartup.PublishSubscribe.Publish("from Console", "Hello From Console");
+					//orleansStartup.PublishSubscribe.Publish("from Console", "Hello From Console");
 					Console.WriteLine("Press Enter to close.");
 					Console.ReadLine();
 				}
