@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2006
+VisualStudioVersion = 15.0.27004.2008
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.Discovery.Abstactions", "src\vivego.Discovery\vivego.Discovery.Abstactions.csproj", "{8898E2F4-047B-401A-933F-F3954CAC6904}"
 EndProject
@@ -93,9 +93,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.PublishSubscribe.Tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.PublishSubscribe.Grpc", "src\vivego.PublishSubscribe.Grpc\vivego.PublishSubscribe.Grpc.csproj", "{D3D1E82D-7AE6-443B-99C4-4F6B01301F89}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vivego.PublishSubscribe.CacheManager", "src\vivego.PublishSubscribe.CacheManager\vivego.PublishSubscribe.CacheManager.csproj", "{4AF843C1-7E0E-4212-9491-AE0C7B0562BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.PublishSubscribe.CacheManager", "src\vivego.PublishSubscribe.CacheManager\vivego.PublishSubscribe.CacheManager.csproj", "{4AF843C1-7E0E-4212-9491-AE0C7B0562BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vivego.ApiGateway", "src\vivego.ApiGateway\vivego.ApiGateway.csproj", "{7C51A068-4F34-4538-85E8-054D9F94E462}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.ApiGateway", "src\vivego.ApiGateway\vivego.ApiGateway.csproj", "{7C51A068-4F34-4538-85E8-054D9F94E462}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "vivego.UserAgent", "src\vivego.UserAgent\vivego.UserAgent.csproj", "{5A30C9EA-5A75-4B03-AA17-F4D968720D57}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vivego.FullTextSearch.Tests", "src\vivego.FullTextSearch.Tests\vivego.FullTextSearch.Tests.csproj", "{BDBFD09E-2D8B-4216-B370-F099C7101D65}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -231,6 +235,14 @@ Global
 		{7C51A068-4F34-4538-85E8-054D9F94E462}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C51A068-4F34-4538-85E8-054D9F94E462}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C51A068-4F34-4538-85E8-054D9F94E462}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A30C9EA-5A75-4B03-AA17-F4D968720D57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A30C9EA-5A75-4B03-AA17-F4D968720D57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A30C9EA-5A75-4B03-AA17-F4D968720D57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A30C9EA-5A75-4B03-AA17-F4D968720D57}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDBFD09E-2D8B-4216-B370-F099C7101D65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDBFD09E-2D8B-4216-B370-F099C7101D65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDBFD09E-2D8B-4216-B370-F099C7101D65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDBFD09E-2D8B-4216-B370-F099C7101D65}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -266,6 +278,7 @@ Global
 		{1A4B35E3-806C-4876-850A-698F1993336A} = {103AF6D6-AAE9-4E48-83A1-ECB16E82A897}
 		{D3D1E82D-7AE6-443B-99C4-4F6B01301F89} = {103AF6D6-AAE9-4E48-83A1-ECB16E82A897}
 		{4AF843C1-7E0E-4212-9491-AE0C7B0562BE} = {49BAD5FD-B823-44CC-9D67-AE17BEF83C3C}
+		{BDBFD09E-2D8B-4216-B370-F099C7101D65} = {45BE0C3E-B893-44D5-B966-D8BBC67174D2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {70692A79-59D4-47A2-A406-C5C9EEC32B93}

@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netcoreapp2.0</TargetFramework>
+		<OutputType>Exe</OutputType>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Lucene.Net" Version="4.8.0-beta00005" />
+		<PackageReference Include="Lucene.Net.Analysis.Common" Version="4.8.0-beta00005" />
+		<PackageReference Include="Lucene.Net.Memory" Version="4.8.0-beta00005" />
+		<PackageReference Include="Lucene.Net.Queries" Version="4.8.0-beta00005" />
+		<PackageReference Include="Lucene.Net.QueryParser" Version="4.8.0-beta00005" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="2.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="2.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\vivego.core\vivego.core.csproj" />
+		<ProjectReference Include="..\vivego.Serializer.NewtonSoft\vivego.Serializer.NewtonSoft.csproj" />
+		<ProjectReference Include="..\vivego.TextSearch\vivego.FullTextSearch.csproj" />
+	</ItemGroup>
+
+</Project>

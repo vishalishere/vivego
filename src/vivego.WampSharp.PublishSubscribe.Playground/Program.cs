@@ -38,7 +38,7 @@ namespace vivego.WampSharp.PublishSubscribe.Playground
 				throw new WampAuthenticationException($"no user with authid '{user}' in user database");
 			}
 
-			return new TicketSessionAuthenticator(user, ticket, new BackendStaticAuthorizer());
+			return new TicketSessionAuthenticator(user, ticket, new BackendStaticAuthorizer(new string[0]));
 		}
 	}
 
