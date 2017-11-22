@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace vivego.core
 {
@@ -12,36 +11,27 @@ namespace vivego.core
 		private readonly Lazy<CancellationTokenSource> _lazyCancellationTokenSource =
 			new Lazy<CancellationTokenSource>(() => new CancellationTokenSource(), true);
 
-		private readonly Lazy<CancellationTokenTaskSource<object>> _cancellationTokenTaskSource;
-
 		private long _disposeSignaled;
 
-		protected Task CancellationTask => _cancellationTokenTaskSource.Value.Task;
 		protected CancellationToken CancellationToken => _lazyCancellationTokenSource.Value.Token;
 
 		public bool IsDisposed => Interlocked.Read(ref _disposeSignaled) != 0;
 
-		protected DisposableBase()
-		{
-			_cancellationTokenTaskSource = new Lazy<CancellationTokenTaskSource<object>>(() => new CancellationTokenTaskSource<object>(CancellationToken), true);
-		}
-
 		public void Dispose()
 		{
 			Cleanup();
-			if (_cancellationTokenTaskSource.IsValueCreated)
-			{
-				_cancellationTokenTaskSource.Value.Dispose();
-			}
-
-			if (_lazyCancellationTokenSource.IsValueCreated)
-			{
-				_lazyCancellationTokenSource.Value.Dispose();
-			}
 
 			while (_disposables.TryPop(out IDisposable disposable))
 			{
 				disposable.Dispose();
+			}
+
+			if (_lazyCancellationTokenSource.IsValueCreated)
+			{
+				using (_lazyCancellationTokenSource.Value)
+				{
+					_lazyCancellationTokenSource.Value.Cancel(false);
+				}
 			}
 
 			// Take yourself off the finalization queue
