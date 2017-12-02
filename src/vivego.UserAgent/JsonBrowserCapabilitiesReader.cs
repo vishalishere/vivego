@@ -10,7 +10,7 @@ namespace vivego.UserAgent
 {
 	public class JsonBrowserCapabilitiesReader
 	{
-		public static IList<BrowserCapabilities> Read(string fileName)
+		public static IEnumerable<BrowserCapabilities> Read(string fileName)
 		{
 			if (fileName == null)
 			{
@@ -24,11 +24,21 @@ namespace vivego.UserAgent
 
 			using (FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read))
 			{
-				return ReadJson(fileStream);
+				return Read(fileStream);
 			}
 		}
 
-		public static IList<BrowserCapabilities> ReadJson(Stream stream)
+		public static IEnumerable<BrowserCapabilities> Read(Stream stream)
+		{
+			if (stream == null)
+			{
+				throw new ArgumentNullException(nameof(stream));
+			}
+
+			return ReadJson(stream);
+		}
+
+		public static IEnumerable<BrowserCapabilities> ReadJson(Stream stream)
 		{
 			if (stream == null)
 			{
@@ -72,24 +82,24 @@ namespace vivego.UserAgent
 										.OfType<JProperty>()
 										.ToDictionary(jProperty => jProperty.Path, jProperty => jProperty.Value.ToString());
 
-									browserCapabilities.Add(browserCapability);
-									browserCapabilitiesLookup.Add(browserCapability.Pattern, browserCapability);
-
 									BrowserCapabilities capability = browserCapability;
 									while (!string.IsNullOrEmpty(capability.Parent)
 										&& browserCapabilitiesLookup.TryGetValue(capability.Parent, out capability))
 									{
 										browserCapability.Merge(capability);
 									}
+									
+									browserCapabilities.Add(browserCapability);
+									browserCapabilitiesLookup.Add(browserCapability.Pattern, browserCapability);
 								}
+
+								yield return browserCapability;
 							}
 
 							break;
 					}
 				}
 			}
-
-			return browserCapabilities;
 		}
 	}
 }

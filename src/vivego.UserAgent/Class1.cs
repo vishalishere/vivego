@@ -3,99 +3,62 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
+using Lucene.Net.Analysis.Core;
+using Lucene.Net.Analysis.TokenAttributes;
+using Lucene.Net.Util;
+
 using Microsoft.Extensions.Caching.Memory;
 
-using Newtonsoft.Json.Linq;
-
-using vivego.core;
 using vivego.FullTextSearch;
 using vivego.Serializer.NewtonSoft;
 
 namespace vivego.UserAgent
 {
-	public class UserAgentParser : DisposableBase
-	{
-		private readonly IFullTextSearch<string> _textSearch;
-		private NewtonSoftJsonSerializer jsonSerializer;
-
-		public UserAgentParser(string fileName)
-		{
-			jsonSerializer = new NewtonSoftJsonSerializer();
-
-			_textSearch = new FsDirectoryLuceneFullTextSearch<string>("d:\\temp\\Index", jsonSerializer);
-			if (_textSearch is IDisposable disposable)
-			{
-				RegisterDisposable(disposable);
-			}
-
-			//if (!_textSearch.Search(new []{ "*" }).Any())
-			{
-				//IDictionary<string, BrowserCapabilities> db = JsonBrowserCapabilitiesReader.Read(fileName);
-				//_textSearch.Commit();
-			}
-
-			//foreach ((string Term, string Data) tuple in _textSearch.Search(new []{ "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36 OPR/48.0.2685.52" 
-			//	.Replace(";", "")
-			//	.Replace("(", "")
-			//	.Replace(")", "")
-			//	.Replace("/", "")
-			//	.Replace(" ", "*")}))
-			//{
-			//	Console.Out.WriteLine(tuple);
-			//}
-		}
-
-		//public IDictionary<string, string> Lookup(string userAgent)
-		//{
-		//	return _textSearch
-		//		.Search(userAgent)
-		//		.Select()
-		//}
-
-		//private IDictionary<string, string> Resolve(string key)
-		//{
-			
-		//}
-
-		//private IDictionary<string, string> From(string json)
-		//{
-		//	JObject jObject = (JObject) jsonSerializer.Deserialize(json);
-		//	return jObject
-		//		.ToDictionary(x => x.Key, null);
-
-		//}
-	}
-
-	public class UserAgentLookup
-	{
-	}
-
 	public class EntryPoint
 	{
 		public static void Main(string[] args)
 		{
-			//UserAgentParser ua = new UserAgentParser(@"C:\Users\esben\Downloads\browscap.json");
-
 			var db  = JsonBrowserCapabilitiesReader.ReadJson(new FileStream(@"C:\Users\esben\Downloads\browscap.json", FileMode.Open,
 				FileAccess.Read));
-			IBrowserCapacilitiesLookup lookup = new BrowserCapacilitiesLookup(db);
-			lookup = new CachedBrowserCapacilitiesLookup(new MemoryCache(new MemoryCacheOptions()), lookup);
 
-			var bc = lookup.Lookup("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36");
+			InMemoryLuceneFullTextSearch<BrowserCapabilities> fullTextSearch = new InMemoryLuceneFullTextSearch<BrowserCapabilities>(new NewtonSoftJsonSerializer());
+			foreach (BrowserCapabilities browserCapabilitiese in db.Take(1000))
+			{
+				fullTextSearch.Ingest(Tokenize(browserCapabilitiese.Pattern).ToArray(), browserCapabilitiese);
+			}
 
-			Console.Out.WriteLine(bc);
-			Console.ReadLine();
+			fullTextSearch.Commit();
 
+			//IBrowserCapacilitiesLookup lookup = new BrowserCapacilitiesLookup(db);
+			//lookup = new CachedBrowserCapacilitiesLookup(new MemoryCache(new MemoryCacheOptions()), lookup);
 
-			//var regex = "^" + 
-			//	Regex.Escape("mozilla/5.0 (*windows nt 10.0*win64? x64*) applewebkit* (*khtml*like*gecko*)*chrome/*safari/*opr/48.0*")
-			//		.Replace(@"\*", ".*")
-			//		.Replace(@"\?", ".?")
-			//	+ "$";
+			////var bc = lookup.Lookup("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36");
+			////Console.Out.WriteLine(bc.Pattern);
 
-			//Console.Out.WriteLine(Regex.IsMatch(
-			//	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36 OPR/48.0.2685.52".ToLowerInvariant(),
-			//	regex));
+			////var analyzer = new SimpleAnalyzer(LuceneVersion.LUCENE_48);
+
+			////Mozilla/5.0 (*Windows NT 10.0*Win64? x64*) applewebkit* (*khtml*like*gecko*) Chrome/62.0*Safari/*
+			var value = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36";
+			//Console.Out.WriteLine("---");
+			//Tokanize("Mozilla/5.0 (*Windows NT 10.0*Win64? x64*) applewebkit* (*khtml*like*gecko*) Chrome/62.0*Safari/*");
+
+			foreach ((string Term, BrowserCapabilities Data) valueTuple in fullTextSearch.Search(Tokenize(value).ToArray()))
+			{
+				Console.Out.WriteLine(valueTuple.Term);
+			}
+		}
+
+		private static IEnumerable<string> Tokenize(string value)
+		{
+			using (StringReader stringReader = new StringReader(value))
+			using (LetterTokenizer letterTokenizer = new LetterTokenizer(LuceneVersion.LUCENE_48, stringReader))
+			{
+				letterTokenizer.Reset();
+				while (letterTokenizer.IncrementToken())
+				{
+					yield return letterTokenizer.GetAttribute<ICharTermAttribute>().ToString();
+				}
+			}
 		}
 	}
 }

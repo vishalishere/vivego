@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using Newtonsoft.Json;
+
 using vivego.core;
 using vivego.PublishSubscribe;
 using vivego.Serializer.Wire;
@@ -138,6 +141,9 @@ namespace vivego.WampSharp.PublishSubscribe.Playground
 			DefaultWampAuthenticationHost host = new DefaultWampAuthenticationHost(serverAddress, new VergicWampAuthenticatorFactory());
 
 			IWampHostedRealm realm = host.RealmContainer.GetRealmByName("vivego");
+			realm.SessionCreated += Realm_SessionCreated;
+			realm.SessionClosed += Realm_SessionClosed;
+
 			//EnableDistributedBackplane(realm);
 			host.Open();
 
@@ -149,7 +155,7 @@ namespace vivego.WampSharp.PublishSubscribe.Playground
 				.GetSubject<object>("vivego")
 				.Subscribe(s => { Console.Out.WriteLine(s); }))
 			{
-				while (true)
+				//while (true)
 				{
 					string input = Console.ReadLine();
 
@@ -159,6 +165,20 @@ namespace vivego.WampSharp.PublishSubscribe.Playground
 						new object[] { "Helo" });
 				}
 			}
+
+			wampChannel.Close();
+
+			Console.ReadLine();
+		}
+
+		private static void Realm_SessionClosed(object sender, WampSessionCloseEventArgs e)
+		{
+			Console.Out.WriteLine(JsonConvert.SerializeObject(e));
+		}
+
+		private static void Realm_SessionCreated(object sender, WampSessionCreatedEventArgs e)
+		{
+			Console.Out.WriteLine(JsonConvert.SerializeObject(e));
 		}
 	}
 }

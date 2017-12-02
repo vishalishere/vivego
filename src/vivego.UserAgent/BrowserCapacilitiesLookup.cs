@@ -5,9 +5,9 @@ namespace vivego.UserAgent
 {
 	public class BrowserCapacilitiesLookup : IBrowserCapacilitiesLookup
 	{
-		private readonly IList<BrowserCapabilities> _db;
+		private readonly IEnumerable<BrowserCapabilities> _db;
 
-		public BrowserCapacilitiesLookup(IList<BrowserCapabilities> db)
+		public BrowserCapacilitiesLookup(IEnumerable<BrowserCapabilities> db)
 		{
 			_db = db ?? throw new ArgumentNullException(nameof(db));
 		}

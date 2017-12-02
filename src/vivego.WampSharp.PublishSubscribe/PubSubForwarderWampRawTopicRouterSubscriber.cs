@@ -45,7 +45,9 @@ namespace vivego.WampSharp.PublishSubscribe
 			});
 		}
 
-		public void Event<TMessage>(IWampFormatter<TMessage> formatter, long publicationId, PublishOptions options,
+		public void Event<TMessage>(IWampFormatter<TMessage> formatter, 
+			long publicationId, 
+			PublishOptions options,
 			TMessage[] arguments)
 		{
 			if (_disableInternalPublishAtomicBoolean.Value)

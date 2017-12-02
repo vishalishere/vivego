@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 
+using Lucene.Net.Analysis.Core;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
@@ -31,7 +32,7 @@ namespace vivego.FullTextSearch
 
 			RegisterDisposable(directory);
 
-			_writer = new IndexWriter(directory, new IndexWriterConfig(LuceneVersion, new StandardAnalyzer(LuceneVersion)));
+			_writer = new IndexWriter(directory, new IndexWriterConfig(LuceneVersion, new SimpleAnalyzer(LuceneVersion)));
 			RegisterDisposable(_writer);
 			_writer.Commit();
 
