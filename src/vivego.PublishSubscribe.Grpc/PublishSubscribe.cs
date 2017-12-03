@@ -108,7 +108,8 @@ namespace vivego.PublishSubscribe.Grpc
 
 					using (var cancellationTokenTaskSource = new CancellationTokenTaskSource<object>(cancellationToken))
 					{
-						await Task.WhenAny(CancellationTask, cancellationTokenTaskSource.Task)
+						await Task
+							.WhenAny(CancellationTokenTask, cancellationTokenTaskSource.Task)
 							.ConfigureAwait(false);
 					}
 
